@@ -86,7 +86,7 @@ func startup() error {
 		len(config.Validator.Strategy) == 0 {
 		fmt.Printf("\n")
 		fmt.Printf("Sample usage: arb-validator --conf=<filename> \n")
-		fmt.Printf("          or: arb-validator --persistent.storage.path=<path> --l1.url=<L1 RPC> --feed.input.url=<feed websocket>\n")
+		fmt.Printf("          or: arb-validator --persistent.storage.path=<path> --l1.url=<L1 RPC> --feed.input.url=<feed websocket>\n\n")
 		if err != nil && !strings.Contains(err.Error(), "help requested") {
 			fmt.Printf("%s\n", err.Error())
 		}
@@ -167,7 +167,7 @@ func startup() error {
 		}
 	}
 
-	valAuth, err := ethbridge.NewTransactAuth(ctx, l1Client, auth, config.GasPriceUrl)
+	valAuth, err := ethbridge.NewTransactAuth(ctx, l1Client, auth, config)
 	if err != nil {
 		return errors.Wrap(err, "error creating connecting to chain")
 	}

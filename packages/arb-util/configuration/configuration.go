@@ -3,6 +3,7 @@ package configuration
 import (
 	"context"
 	"fmt"
+	"github.com/offchainlabs/arbitrum/packages/arb-util/fireblocks"
 	"io"
 	"math/big"
 	"net/http"
@@ -12,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/golang-jwt/jwt"
 	"github.com/knadh/koanf"
 	"github.com/knadh/koanf/parsers/json"
 	"github.com/knadh/koanf/providers/confmap"
@@ -55,6 +57,15 @@ type FeedOutput struct {
 type Feed struct {
 	Input  FeedInput  `koanf:"input"`
 	Output FeedOutput `koanf:"output"`
+}
+
+type Fireblocks struct {
+	APIKey       string `koanf:"api-key"`
+	BaseURL      string `koanf:"base-url"`
+	ListAccounts bool   `koanf:"list-accounts"`
+	PrivateKey   string `koanf:"private-key"`
+	KeyPassword  string `koanf:"key-password"`
+	SourceId     string `koanf:"source-id"`
 }
 
 type Healthcheck struct {
@@ -150,6 +161,7 @@ type Config struct {
 	BridgeUtilsAddress string      `koanf:"bridge-utils-address"`
 	Conf               Conf        `koanf:"conf"`
 	Feed               Feed        `koanf:"feed"`
+	Fireblocks         Fireblocks  `koanf:"fireblocks"`
 	GasPrice           float64     `koanf:"gas-price"`
 	GasPriceUrl        string      `koanf:"gas-price-url"`
 	Healthcheck        Healthcheck `koanf:"healthcheck"`
@@ -210,6 +222,8 @@ func ParseValidator(ctx context.Context) (*Config, *Wallet, *ethutils.RPCEthClie
 
 func ParseNonRelay(ctx context.Context, f *flag.FlagSet) (*Config, *Wallet, *ethutils.RPCEthClient, *big.Int, error) {
 	f.String("bridge-utils-address", "", "bridgeutils contract address")
+
+	f.Bool("fireblocks.list-accounts", false, "Print out list of fireblocks accounts and exit")
 
 	f.Float64("gas-price", 4.5, "gasprice=FloatInGwei")
 	f.String("gas-price-url", "", "gas price rpc url (etherscan compatible)")
@@ -533,8 +547,25 @@ func endCommonParse(f *flag.FlagSet, k *koanf.Koanf) (*Config, *Wallet, error) {
 	}
 	err := k.UnmarshalWithConf("", &out, koanf.UnmarshalConf{DecoderConfig: &decoderConfig})
 	if err != nil {
-
 		return nil, nil, err
+	}
+
+	if out.Fireblocks.ListAccounts {
+		signKey, err := jwt.ParseRSAPrivateKeyFromPEM([]byte(out.Fireblocks.PrivateKey))
+		if err != nil {
+			return nil, nil, errors.Wrap(err, "unable to initialize private key to list fireblocks accounts")
+		}
+		fb := fireblocks.New("ETH", out.Fireblocks.BaseURL, out.Fireblocks.SourceId, out.Fireblocks.APIKey, signKey)
+
+		result, err := fb.ListVaultAccounts()
+		if err != nil {
+			return nil, nil, errors.Wrap(err, "unable to send query to list fireblocks accounts")
+		}
+
+		fmt.Println("Fireblocks accounts:")
+		for _, account := range result.VaultAccounts {
+			fmt.Printf("%s\t%s\n", account.Id, account.Name)
+		}
 	}
 
 	if out.Conf.Dump {
@@ -558,6 +589,21 @@ func endCommonParse(f *flag.FlagSet, k *koanf.Koanf) (*Config, *Wallet, error) {
 	// Don't pass around password with normal configuration
 	wallet := out.Wallet
 	out.Wallet.Password = ""
+
+	if len(out.Fireblocks.APIKey) != 0 {
+		if len(out.Fireblocks.BaseURL) == 0 {
+			return nil, nil, errors.New("Have fireblocks.api-key but missing fireblocks.base-url")
+		}
+		if len(out.Fireblocks.PrivateKey) == 0 {
+			return nil, nil, errors.New("Have fireblocks.api-key but missing fireblocks.private-key")
+		}
+		if len(out.Fireblocks.SourceId) == 0 {
+			return nil, nil, errors.New("Have fireblocks.api-key but missing fireblocks.source-id")
+		}
+
+		if out.Fireblocks.ListAccounts {
+		}
+	}
 
 	return &out, &wallet, nil
 }

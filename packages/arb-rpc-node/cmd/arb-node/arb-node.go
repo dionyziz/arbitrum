@@ -283,8 +283,7 @@ func startup() error {
 			time.Duration(config.Node.Aggregator.MaxBatchTime)*time.Second,
 			batcherMode,
 			dataSigner,
-			config.Feed.Output,
-			config.GasPriceUrl,
+			config,
 		)
 		lockoutConf := config.Node.Sequencer.Lockout
 		if err == nil && lockoutConf.Redis != "" {
