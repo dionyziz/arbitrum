@@ -26,21 +26,26 @@ import (
 	"io"
 	"math/rand"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt"
 	"github.com/rs/zerolog/log"
+
+	"github.com/offchainlabs/arbitrum/packages/arb-util/fireblocks/accounttype"
+	"github.com/offchainlabs/arbitrum/packages/arb-util/fireblocks/operationtype"
 )
 
 var logger = log.With().Caller().Stack().Str("component", "configuration").Logger()
 
 type Fireblocks struct {
-	apiKey   string
-	assetId  string
-	baseUrl  string
-	signKey  *rsa.PrivateKey
-	sourceId string
+	apiKey     string
+	assetId    string
+	baseUrl    string
+	signKey    *rsa.PrivateKey
+	sourceId   string
+	sourceType accounttype.AccountType
 }
 
 type CreateNewTransactionBody struct {
@@ -56,7 +61,7 @@ type CreateNewTransactionBody struct {
 	MaxFee          string                          `json:"maxFee,omitempty"`
 	FailOnLowFee    bool                            `json:"failOnLowFee,omitempty"`
 	Note            string                          `json:"note,omitempty"`
-	Operation       string                          `json:"operation,omitempty"`
+	Operation       operationtype.OperationType     `json:"operation,omitempty"`
 	CustomerRefId   string                          `json:"customerRefId,omitempty"`
 	Destinations    []TransactionRequestDestination `json:"destinations,omitempty"`
 	ExtraParameters TransactionExtraParameters      `json:"extraParameters"`
@@ -67,14 +72,14 @@ type TransactionExtraParameters struct {
 }
 
 type TransferPeerPath struct {
-	Type string `json:"type"`
-	Id   string `json:"id"`
+	Type accounttype.AccountType `json:"type"`
+	Id   string                  `json:"id"`
 }
 
 type DestinationTransferPeerPath struct {
-	Type           string         `json:"type"`
-	Id             string         `json:"id"`
-	OneTimeAddress OneTimeAddress `json:"oneTimeAddress,omitempty"`
+	Type           accounttype.AccountType `json:"type"`
+	Id             string                  `json:"id"`
+	OneTimeAddress OneTimeAddress          `json:"oneTimeAddress,omitempty"`
 }
 
 type OneTimeAddress struct {
@@ -120,7 +125,7 @@ type TransactionRequestDestination struct {
 }
 
 type fireblocksClaims struct {
-	Uri      string `json:"url"`
+	Uri      string `json:"uri"`
 	Nonce    int64  `json:"nonce"`
 	Iat      int64  `json:"iat"`
 	Exp      int64  `json:"exp"`
@@ -129,18 +134,19 @@ type fireblocksClaims struct {
 	jwt.StandardClaims
 }
 
-func New(assetId string, baseUrl string, sourceId string, apiKey string, signKey *rsa.PrivateKey) *Fireblocks {
+func New(assetId string, baseUrl string, sourceType accounttype.AccountType, sourceId string, apiKey string, signKey *rsa.PrivateKey) *Fireblocks {
 	return &Fireblocks{
-		apiKey:   apiKey,
-		assetId:  assetId,
-		baseUrl:  baseUrl,
-		signKey:  signKey,
-		sourceId: sourceId,
+		apiKey:     apiKey,
+		assetId:    assetId,
+		baseUrl:    baseUrl,
+		signKey:    signKey,
+		sourceId:   sourceId,
+		sourceType: sourceType,
 	}
 }
 
 func (fb *Fireblocks) ListVaultAccounts() (*ListVaultAccountsResult, error) {
-	resp, err := fb.postRequest("/v1/vault/accounts", nil)
+	resp, err := fb.sendRequest("/v1/vault/accounts", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -154,14 +160,28 @@ func (fb *Fireblocks) ListVaultAccounts() (*ListVaultAccountsResult, error) {
 	return &result, err
 }
 
-func (fb *Fireblocks) CreateNewTransaction(destinationId string, callData string) (*CreateTransactionResponse, error) {
+func (fb *Fireblocks) CreateNewContractCall(destinationType accounttype.AccountType, destinationId string, destinationTag string, callData string) (*CreateTransactionResponse, error) {
+	return fb.CreateNewTransaction(destinationType, destinationId, destinationTag, "0", operationtype.ContractCall, callData)
+}
+
+func (fb *Fireblocks) CreateNewTransaction(destinationType accounttype.AccountType, destinationId string, destinationTag string, amount string, operation operationtype.OperationType, callData string) (*CreateTransactionResponse, error) {
+
+	destination := DestinationTransferPeerPath{Type: destinationType}
+	if destination.Type == accounttype.OneTimeAddress {
+		destination.OneTimeAddress = OneTimeAddress{
+			Address: destinationId,
+			Tag:     destinationTag,
+		}
+	} else {
+		destination.Id = destinationId
+	}
 
 	body := &CreateNewTransactionBody{
 		AssetId:         fb.assetId,
-		Source:          TransferPeerPath{Type: "VAULT_ACCOUNT", Id: fb.sourceId},
-		Destination:     DestinationTransferPeerPath{Type: "EXTERNAL_WALLET", Id: destinationId},
-		Amount:          "0",
-		Operation:       "CONTRACT_CALL",
+		Source:          TransferPeerPath{Type: fb.sourceType, Id: fb.sourceId},
+		Destination:     destination,
+		Amount:          amount,
+		Operation:       operation,
 		ExtraParameters: TransactionExtraParameters{ContractCallData: callData},
 	}
 
@@ -170,7 +190,7 @@ func (fb *Fireblocks) CreateNewTransaction(destinationId string, callData string
 		return nil, err
 	}
 
-	resp, err := fb.postRequest("/v1/transactions", jsonData)
+	resp, err := fb.sendRequest("/v1/transactions", jsonData)
 	if err != nil {
 		return nil, err
 	}
@@ -184,7 +204,7 @@ func (fb *Fireblocks) CreateNewTransaction(destinationId string, callData string
 	return &result, err
 }
 
-func (fb *Fireblocks) postRequest(path string, body []byte) (*http.Response, error) {
+func (fb *Fireblocks) sendRequest(path string, body []byte) (*http.Response, error) {
 	token, err := fb.signJWT(path, body)
 	if err != nil {
 		return nil, err
@@ -192,7 +212,7 @@ func (fb *Fireblocks) postRequest(path string, body []byte) (*http.Response, err
 
 	client := &http.Client{}
 	url := fb.baseUrl + path
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
+	req, err := http.NewRequest("GET", url, bytes.NewBuffer(body))
 	if err != nil {
 		logger.
 			Error().
@@ -201,17 +221,15 @@ func (fb *Fireblocks) postRequest(path string, body []byte) (*http.Response, err
 			Msg("error creating new fireblocks request")
 		return nil, err
 	}
+	req.Header.Add("Accept", "*/*")
 	req.Header.Add("X-API-Key", fb.apiKey)
 	req.Header.Add("Authorization", "Bearer "+token)
-	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Accept", "application/json")
 	resp, err := client.Do(req)
 	if err != nil {
 		logger.
 			Error().
 			Err(err).
 			Str("url", fb.baseUrl).
-			Str("status", resp.Status).
 			Msg("error doing fireblocks request")
 		return nil, err
 	}
@@ -245,7 +263,8 @@ func (fb *Fireblocks) signJWT(path string, body []byte) (string, error) {
 	newPath := strings.Replace(path, "[", "%5B", -1)
 	newPath = strings.Replace(newPath, "]", "%5D", -1)
 	now := time.Now().Unix()
-	bodyHash := sha256.Sum256(body)
+	quotedBody := strconv.Quote(string(body))
+	bodyHash := sha256.Sum256([]byte(quotedBody))
 
 	claims := fireblocksClaims{
 		Uri:      newPath,

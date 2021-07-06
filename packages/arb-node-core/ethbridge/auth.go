@@ -30,6 +30,7 @@ import (
 	"github.com/offchainlabs/arbitrum/packages/arb-util/configuration"
 	"github.com/offchainlabs/arbitrum/packages/arb-util/ethutils"
 	"github.com/offchainlabs/arbitrum/packages/arb-util/fireblocks"
+	"github.com/offchainlabs/arbitrum/packages/arb-util/fireblocks/accounttype"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	ethcommon "github.com/ethereum/go-ethereum/common"
@@ -68,9 +69,11 @@ func NewTransactAuth(ctx context.Context, client ethutils.EthClient, auth *bind.
 		if err != nil {
 			return nil, errors.Wrap(err, "problem with fireblocks privatekey")
 		}
-		fb := fireblocks.New("ETH", config.Fireblocks.BaseURL, config.Fireblocks.SourceId, config.Fireblocks.APIKey, signKey)
+		// Config already validated so error will not happen
+		sourceType, _ := accounttype.New(config.Fireblocks.SourceId)
+		fb := fireblocks.New("ETH", config.Fireblocks.BaseURL, *sourceType, config.Fireblocks.SourceId, config.Fireblocks.APIKey, signKey)
 		sendTx = func(ctx context.Context, tx *types.Transaction) error {
-			response, err := fb.CreateNewTransaction(tx.To().Hex(), ethcommon.Bytes2Hex(tx.Data()))
+			response, err := fb.CreateNewContractCall(accounttype.OneTimeAddress, tx.To().Hex(), "", ethcommon.Bytes2Hex(tx.Data()))
 			if err != nil {
 				return err
 			}

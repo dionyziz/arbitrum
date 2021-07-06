@@ -3,7 +3,6 @@ package configuration
 import (
 	"context"
 	"fmt"
-	"github.com/offchainlabs/arbitrum/packages/arb-util/fireblocks"
 	"io"
 	"math/big"
 	"net/http"
@@ -24,6 +23,8 @@ import (
 	"github.com/knadh/koanf/providers/s3"
 	"github.com/mitchellh/mapstructure"
 	"github.com/offchainlabs/arbitrum/packages/arb-util/ethutils"
+	"github.com/offchainlabs/arbitrum/packages/arb-util/fireblocks"
+	"github.com/offchainlabs/arbitrum/packages/arb-util/fireblocks/accounttype"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 	flag "github.com/spf13/pflag"
@@ -66,6 +67,7 @@ type Fireblocks struct {
 	PrivateKey   string `koanf:"private-key"`
 	KeyPassword  string `koanf:"key-password"`
 	SourceId     string `koanf:"source-id"`
+	SourceType   string `koanf:"source-type"`
 }
 
 type Healthcheck struct {
@@ -550,21 +552,48 @@ func endCommonParse(f *flag.FlagSet, k *koanf.Koanf) (*Config, *Wallet, error) {
 		return nil, nil, err
 	}
 
-	if out.Fireblocks.ListAccounts {
-		signKey, err := jwt.ParseRSAPrivateKeyFromPEM([]byte(out.Fireblocks.PrivateKey))
-		if err != nil {
-			return nil, nil, errors.Wrap(err, "unable to initialize private key to list fireblocks accounts")
+	if len(out.Fireblocks.APIKey) != 0 || len(out.Fireblocks.BaseURL) != 0 || len(out.Fireblocks.PrivateKey) != 0 ||
+		len(out.Fireblocks.SourceId) == 0 || len(out.Fireblocks.SourceType) != 0 {
+		if len(out.Fireblocks.APIKey) == 0 {
+			return nil, nil, errors.New("fireblocks configured but missing fireblocks.api-key")
 		}
-		fb := fireblocks.New("ETH", out.Fireblocks.BaseURL, out.Fireblocks.SourceId, out.Fireblocks.APIKey, signKey)
-
-		result, err := fb.ListVaultAccounts()
-		if err != nil {
-			return nil, nil, errors.Wrap(err, "unable to send query to list fireblocks accounts")
+		if len(out.Fireblocks.BaseURL) == 0 {
+			return nil, nil, errors.New("fireblocks configured but missing fireblocks.base-url")
+		}
+		if len(out.Fireblocks.PrivateKey) == 0 {
+			return nil, nil, errors.New("fireblocks configured but missing fireblocks.private-key")
+		}
+		if len(out.Fireblocks.SourceId) == 0 {
+			return nil, nil, errors.New("fireblocks configured but missing fireblocks.source-id")
+		}
+		if len(out.Fireblocks.SourceType) == 0 {
+			return nil, nil, errors.New("fireblocks configured but missing fireblocks.source-type")
 		}
 
-		fmt.Println("Fireblocks accounts:")
-		for _, account := range result.VaultAccounts {
-			fmt.Printf("%s\t%s\n", account.Id, account.Name)
+		sourceType, err := accounttype.New(out.Fireblocks.SourceType)
+		if err != nil {
+			return nil, nil, fmt.Errorf("invalid fireblocks.source-type: %s", out.Fireblocks.SourceType)
+		}
+
+		if out.Fireblocks.ListAccounts {
+			signKey, err := jwt.ParseRSAPrivateKeyFromPEM([]byte(out.Fireblocks.PrivateKey))
+			if err != nil {
+				return nil, nil, errors.Wrap(err, "unable to initialize private key to list fireblocks accounts")
+			}
+
+			fb := fireblocks.New("ETH", out.Fireblocks.BaseURL, *sourceType, out.Fireblocks.SourceId, out.Fireblocks.APIKey, signKey)
+
+			result, err := fb.ListVaultAccounts()
+			if err != nil {
+				return nil, nil, errors.Wrap(err, "unable to send query to list fireblocks accounts")
+			}
+
+			fmt.Println("Fireblocks accounts:")
+			for _, account := range result.VaultAccounts {
+				fmt.Printf("%s\t%s\n", account.Id, account.Name)
+			}
+
+			os.Exit(0)
 		}
 	}
 
@@ -589,21 +618,6 @@ func endCommonParse(f *flag.FlagSet, k *koanf.Koanf) (*Config, *Wallet, error) {
 	// Don't pass around password with normal configuration
 	wallet := out.Wallet
 	out.Wallet.Password = ""
-
-	if len(out.Fireblocks.APIKey) != 0 {
-		if len(out.Fireblocks.BaseURL) == 0 {
-			return nil, nil, errors.New("Have fireblocks.api-key but missing fireblocks.base-url")
-		}
-		if len(out.Fireblocks.PrivateKey) == 0 {
-			return nil, nil, errors.New("Have fireblocks.api-key but missing fireblocks.private-key")
-		}
-		if len(out.Fireblocks.SourceId) == 0 {
-			return nil, nil, errors.New("Have fireblocks.api-key but missing fireblocks.source-id")
-		}
-
-		if out.Fireblocks.ListAccounts {
-		}
-	}
 
 	return &out, &wallet, nil
 }

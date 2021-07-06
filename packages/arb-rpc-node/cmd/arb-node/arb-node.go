@@ -209,6 +209,7 @@ func startup() error {
 			Str("url", config.L1.URL).
 			Str("rollup", config.Rollup.Address).
 			Str("bridgeUtils", config.BridgeUtilsAddress).
+			Int64("fromBlock", config.Rollup.FromBlock).
 			Msg("failed to start inbox reader, waiting and retrying")
 
 		select {
