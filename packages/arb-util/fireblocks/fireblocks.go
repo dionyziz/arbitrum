@@ -23,7 +23,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"io"
+	"io/ioutil"
 	"math/rand"
 	"net/http"
 	"strconv"
@@ -235,7 +235,7 @@ func (fb *Fireblocks) sendRequest(path string, body []byte) (*http.Response, err
 	}
 
 	if resp.StatusCode >= 300 {
-		body, err := io.ReadAll(resp.Body)
+		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			logger.
 				Error().
