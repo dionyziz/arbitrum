@@ -18,6 +18,7 @@ package ethbridge
 
 import (
 	"context"
+	"crypto/rsa"
 	"encoding/json"
 	"io"
 	"io/ioutil"
@@ -65,18 +66,31 @@ func NewTransactAuth(ctx context.Context, client ethutils.EthClient, auth *bind.
 	var sendTx func(ctx context.Context, tx *types.Transaction) error
 
 	if len(config.Fireblocks.PrivateKey) != 0 {
-		signKey, err := jwt.ParseRSAPrivateKeyFromPEMWithPassword([]byte(config.Fireblocks.PrivateKey), config.Fireblocks.KeyPassword)
+		var signKey *rsa.PrivateKey
+		var err error
+		if len(config.Fireblocks.KeyPassword) != 0 {
+			signKey, err = jwt.ParseRSAPrivateKeyFromPEMWithPassword([]byte(config.Fireblocks.PrivateKey), config.Fireblocks.KeyPassword)
+		} else {
+			signKey, err = jwt.ParseRSAPrivateKeyFromPEM([]byte(config.Fireblocks.PrivateKey))
+		}
 		if err != nil {
 			return nil, errors.Wrap(err, "problem with fireblocks privatekey")
 		}
-		// Config already validated so error will not happen
-		sourceType, _ := accounttype.New(config.Fireblocks.SourceId)
+		sourceType, err := accounttype.New(config.Fireblocks.SourceType)
+		if err != nil {
+			return nil, errors.Wrap(err, "problem with fireblocks source-type")
+		}
 		fb := fireblocks.New("ETH", config.Fireblocks.BaseURL, *sourceType, config.Fireblocks.SourceId, config.Fireblocks.APIKey, signKey)
 		sendTx = func(ctx context.Context, tx *types.Transaction) error {
-			response, err := fb.CreateNewContractCall(accounttype.OneTimeAddress, tx.To().Hex(), "", ethcommon.Bytes2Hex(tx.Data()))
+			responses, err := fb.CreateNewContractCall(accounttype.OneTimeAddress, tx.To().Hex(), "", ethcommon.Bytes2Hex(tx.Data()))
 			if err != nil {
 				return err
 			}
+
+			if len(*responses) != 1 {
+				logger.Error().Msg("fireblocks returned unexpected number of responses")
+			}
+			response := (*responses)[0]
 
 			if response.Status == "CANCELLED" || response.Status == "REJECTED" || response.Status == "BLOCKED" || response.Status == "FAILED" {
 				logger.Error().Hex("data", tx.Data()).Str("status", response.Status).Msg("fireblocks transaction failed")

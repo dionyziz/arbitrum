@@ -27,10 +27,13 @@ import (
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
+	"github.com/rs/zerolog/log"
 	"golang.org/x/crypto/ssh/terminal"
 
 	"github.com/offchainlabs/arbitrum/packages/arb-util/configuration"
 )
+
+var logger = log.With().Caller().Stack().Str("component", "configuration").Logger()
 
 // GetKeystore returns a transaction authorization based on an existing ethereum
 // keystore located in validatorFolder/wallets or creates one if it does not
@@ -55,31 +58,36 @@ func GetKeystore(
 	}
 
 	if ks.Unlock(account, wallet.Password) != nil {
-		if len(ks.Accounts()) == 0 {
-			fmt.Print("Enter new account password: ")
-		} else {
-			fmt.Print("Enter account password: ")
-		}
+		if len(wallet.Password) == 0 {
+			// Wallet doesn't exist and no password provided
+			if len(ks.Accounts()) == 0 {
+				fmt.Print("Enter new account password: ")
+			} else {
+				fmt.Print("Enter account password: ")
+			}
 
-		bytePassword, err := terminal.ReadPassword(int(syscall.Stdin))
-		if err != nil {
-			return nil, nil, err
-		}
-		passphrase := string(bytePassword)
+			bytePassword, err := terminal.ReadPassword(int(syscall.Stdin))
+			if err != nil {
+				return nil, nil, err
+			}
+			passphrase := string(bytePassword)
 
-		passphrase = strings.TrimSpace(passphrase)
+			wallet.Password = strings.TrimSpace(passphrase)
+		}
 
 		if len(ks.Accounts()) == 0 {
 			var err error
-			account, err = ks.NewAccount(passphrase)
+			account, err = ks.NewAccount(wallet.Password)
 			if err != nil {
 				return nil, nil, err
 			}
 		}
-		err = ks.Unlock(account, passphrase)
+		err := ks.Unlock(account, wallet.Password)
 		if err != nil {
 			return nil, nil, err
 		}
+
+		logger.Info().Hex("address", account.Address.Bytes()).Msg("created new wallet")
 	}
 
 	auth, err := bind.NewKeyStoreTransactorWithChainID(ks, account, chainId)

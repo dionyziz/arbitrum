@@ -570,6 +570,8 @@ func endCommonParse(f *flag.FlagSet, k *koanf.Koanf) (*Config, *Wallet, error) {
 			return nil, nil, errors.New("fireblocks configured but missing fireblocks.source-type")
 		}
 
+		out.Fireblocks.PrivateKey = strings.Replace(out.Fireblocks.PrivateKey, "\\n", "\n", -1)
+
 		sourceType, err := accounttype.New(out.Fireblocks.SourceType)
 		if err != nil {
 			return nil, nil, fmt.Errorf("invalid fireblocks.source-type: %s", out.Fireblocks.SourceType)

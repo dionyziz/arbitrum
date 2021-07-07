@@ -160,11 +160,11 @@ func (fb *Fireblocks) ListVaultAccounts() (*ListVaultAccountsResult, error) {
 	return &result, err
 }
 
-func (fb *Fireblocks) CreateNewContractCall(destinationType accounttype.AccountType, destinationId string, destinationTag string, callData string) (*CreateTransactionResponse, error) {
+func (fb *Fireblocks) CreateNewContractCall(destinationType accounttype.AccountType, destinationId string, destinationTag string, callData string) (*[]CreateTransactionResponse, error) {
 	return fb.CreateNewTransaction(destinationType, destinationId, destinationTag, "0", operationtype.ContractCall, callData)
 }
 
-func (fb *Fireblocks) CreateNewTransaction(destinationType accounttype.AccountType, destinationId string, destinationTag string, amount string, operation operationtype.OperationType, callData string) (*CreateTransactionResponse, error) {
+func (fb *Fireblocks) CreateNewTransaction(destinationType accounttype.AccountType, destinationId string, destinationTag string, amount string, operation operationtype.OperationType, callData string) (*[]CreateTransactionResponse, error) {
 
 	destination := DestinationTransferPeerPath{Type: destinationType}
 	if destination.Type == accounttype.OneTimeAddress {
@@ -195,7 +195,7 @@ func (fb *Fireblocks) CreateNewTransaction(destinationType accounttype.AccountTy
 		return nil, err
 	}
 
-	var result CreateTransactionResponse
+	var result []CreateTransactionResponse
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	if err != nil {
 		return nil, err
