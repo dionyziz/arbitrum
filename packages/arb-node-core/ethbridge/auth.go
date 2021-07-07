@@ -207,8 +207,8 @@ func (t *TransactAuth) getAuth(ctx context.Context) (*bind.TransactOpts, error) 
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to get gas price")
 		}
-		defer func(Body io.ReadCloser) {
-			_ = resp.Body.Close()
+		defer func(body io.ReadCloser) {
+			_ = body.Close()
 		}(resp.Body)
 		text, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
