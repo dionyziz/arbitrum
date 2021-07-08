@@ -553,7 +553,7 @@ func endCommonParse(f *flag.FlagSet, k *koanf.Koanf) (*Config, *Wallet, error) {
 	}
 
 	if len(out.Fireblocks.APIKey) != 0 || len(out.Fireblocks.BaseURL) != 0 || len(out.Fireblocks.PrivateKey) != 0 ||
-		len(out.Fireblocks.SourceAddress) != 0 || len(out.Fireblocks.SourceId) == 0 || len(out.Fireblocks.SourceType) != 0 {
+		len(out.Fireblocks.SourceAddress) != 0 || len(out.Fireblocks.SourceId) != 0 || len(out.Fireblocks.SourceType) != 0 {
 		if len(out.Fireblocks.APIKey) == 0 {
 			return nil, nil, errors.New("fireblocks configured but missing fireblocks.api-key")
 		}
