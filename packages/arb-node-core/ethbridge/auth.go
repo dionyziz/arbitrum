@@ -80,7 +80,7 @@ func NewTransactAuth(ctx context.Context, client ethutils.EthClient, auth *bind.
 		if err != nil {
 			return nil, errors.Wrap(err, "problem with fireblocks source-type")
 		}
-		fb := fireblocks.New("ETH", config.Fireblocks.BaseURL, *sourceType, config.Fireblocks.SourceId, config.Fireblocks.APIKey, signKey)
+		fb := fireblocks.New(config.Fireblocks.AssetId, config.Fireblocks.BaseURL, *sourceType, config.Fireblocks.SourceId, config.Fireblocks.APIKey, signKey)
 		sendTx = func(ctx context.Context, tx *types.Transaction) error {
 			responses, err := fb.CreateNewContractCall(accounttype.OneTimeAddress, tx.To().Hex(), "", ethcommon.Bytes2Hex(tx.Data()))
 			if err != nil {
@@ -93,11 +93,14 @@ func NewTransactAuth(ctx context.Context, client ethutils.EthClient, auth *bind.
 			response := (*responses)[0]
 
 			if response.Status == "CANCELLED" || response.Status == "REJECTED" || response.Status == "BLOCKED" || response.Status == "FAILED" {
-				logger.Error().Hex("data", tx.Data()).Str("status", response.Status).Msg("fireblocks transaction failed")
+				logger.
+					Error().
+					Hex("data", tx.Data()).
+					Str("id", response.Id).
+					Str("status", response.Status).
+					Msg("fireblocks transaction failed")
 				return errors.New("fireblocks transaction failed")
 			}
-
-			logger.Debug().Hex("data", tx.Data()).Str("status", response.Status).Msg("fireblocks transaction submitted")
 			return nil
 		}
 	} else {
@@ -126,13 +129,8 @@ func (t *TransactAuth) makeContract(ctx context.Context, contractFunc func(auth 
 		return ethcommon.Address{}, nil, err
 	}
 
-	origNoSend := t.auth.NoSend
-	t.auth.NoSend = true
-	defer func(t *TransactAuth) {
-		t.auth.NoSend = origNoSend
-	}(t)
-
 	// Form transaction without sending it
+	auth.NoSend = true
 	addr, tx, _, err := contractFunc(auth)
 	err = errors.WithStack(err)
 	if err != nil {
@@ -173,9 +171,9 @@ func (t *TransactAuth) makeContract(ctx context.Context, contractFunc func(auth 
 		return addr, nil, err
 	}
 
-	// Transaction successful, increment nonce for next time
-	logger.Info().Str("nonce", auth.Nonce.String()).Hex("sender", t.auth.From.Bytes()).Send()
+	logger.Info().Str("nonce", auth.Nonce.String()).Hex("sender", t.auth.From.Bytes()).Msg("transaction sent")
 
+	// Transaction successful, increment nonce for next time
 	t.auth.Nonce = t.auth.Nonce.Add(t.auth.Nonce, big.NewInt(1))
 	return addr, tx, err
 }

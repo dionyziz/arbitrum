@@ -37,7 +37,7 @@ import (
 	"github.com/offchainlabs/arbitrum/packages/arb-util/fireblocks/operationtype"
 )
 
-var logger = log.With().Caller().Stack().Str("component", "configuration").Logger()
+var logger = log.With().Caller().Stack().Str("component", "fireblocks").Logger()
 
 type Fireblocks struct {
 	apiKey     string
@@ -78,7 +78,7 @@ type TransferPeerPath struct {
 
 type DestinationTransferPeerPath struct {
 	Type           accounttype.AccountType `json:"type"`
-	Id             string                  `json:"id"`
+	Id             string                  `json:"id,omitempty"`
 	OneTimeAddress OneTimeAddress          `json:"oneTimeAddress,omitempty"`
 }
 
@@ -88,12 +88,102 @@ type OneTimeAddress struct {
 }
 
 type CreateTransactionResponse struct {
-	ID     string `json:"id"`
+	Id     string `json:"id"`
 	Status string `json:"status"`
 }
 
-type ListVaultAccountsResult struct {
-	VaultAccounts []VaultAccount `json:"vaultAccounts"`
+type TransactionDetails struct {
+	Id                            string                   `json:"id"`
+	AssetId                       string                   `json:"assetId"`
+	Source                        TransferPeerPathResponse `json:"source"`
+	Destination                   TransferPeerPathResponse `json:"destination"`
+	RequestedAmount               int64                    `json:"requestedAmount"`
+	AmountInfo                    AmountInfo               `json:"amountInfo"`
+	FeeInfo                       FeeInfo                  `json:"feeInfo"`
+	Amount                        int64                    `json:"amount"`
+	NetAmount                     float32                  `json:"NetAmount"`
+	AmountUSD                     float32                  `json:"amountUSD"`
+	ServiceFee                    float32                  `json:"serviceFee"`
+	NetworkFee                    float32                  `json:"networkFee"`
+	CreatedAt                     int64                    `json:"createdAt"`
+	LastUpdate                    int64                    `json:"lastUpdate"`
+	Status                        string                   `json:"transactionStatus"`
+	TxHash                        string                   `json:"txHash"`
+	SubStatus                     string                   `json:"transactionSubStatus"`
+	DestinationAddress            string                   `json:"destinationAddress"`
+	DestinationAddressDescription string                   `json:"destinationAddressDescription"`
+	DestinationTag                string                   `json:"destinationTag"`
+	SignedBy                      []string                 `json:"signedBy"`
+	CreatedBy                     string                   `json:"createdBy"`
+	RejectedBy                    string                   `json:"rejectedBy"`
+	AddressType                   string                   `json:"addressType"`
+	Note                          string                   `json:"note"`
+	ExchangeTxId                  string                   `json:"exchangeTxId"`
+	FeeCurrency                   string                   `json:"feeCurrency"`
+	Operation                     string                   `json:"operation"`
+	AmlScreeningResult            AmlScreeningResult       `json:"amlScreeningResult"`
+	CustomerRefId                 string                   `json:"customerRefId"`
+	NumOfConfirmations            int                      `json:"numOfConfirmations"`
+	NetworkRecords                []string                 `json:"networkRecords"`
+	ReplacedTxHash                string                   `json:"replacedTxHash"`
+	Destinations                  []DestinationsResponse   `json:"destinations"`
+	SignedMessages                []SignedMessage          `json:"signedMessages"`
+	ExtraParameters               string                   `json:"extraParameters"`
+}
+
+type TransferPeerPathResponse struct {
+	Type    string `json:"type"`
+	Id      string `json:"id"`
+	Name    string `json:"name"`
+	SubType string `json:"subType"`
+}
+
+type AmountInfo struct {
+	Amount          string `json:"amount"`
+	RequestedAmount string `json:"requestedAmount"`
+	NetAmount       string `json:"netAmount"`
+	AmountUSD       string `json:"amountUSD"`
+}
+
+type FeeInfo struct {
+	NetworkFee string `json:"networkFee"`
+	ServiceFee string `json:"serviceFee"`
+}
+
+type NetworkRecord struct {
+	Source             TransferPeerPathResponse `json:"source"`
+	Destination        TransferPeerPathResponse `json:"destination"`
+	TxHash             string                   `json:"txHash"`
+	NetworkFee         int64                    `json:"networkFee"`
+	AssetId            string                   `json:"assetId"`
+	NetAmount          int64                    `json:"netAmount"`
+	Status             string                   `json:"status"`
+	Type               string                   `json:"type"`
+	DestinationAddress string                   `json:"destinationAddress"`
+}
+
+type AmlScreeningResult struct {
+	Operation string `json:"amlScreeningResult"`
+}
+
+type SignedMessage struct {
+	Content        string     `json:"content"`
+	Algorithm      string     `json:"algorithm"`
+	DerivationPath []int      `json:"derivationPath"`
+	Signature      Dictionary `json:"signature"`
+	PublicKey      string     `json:"publicKey"`
+}
+
+type Dictionary map[string]interface{}
+
+type DestinationsResponse struct {
+	Amount                        string             `json:"amount"`
+	Destination                   string             `json:"destination"`
+	AmountUSD                     string             `json:"amountUSD"`
+	DestinationAddress            string             `json:"destinationAddress"`
+	DestinationAddressDescription string             `json:"destinationAddressDescription"`
+	AmlScreeningResult            AmlScreeningResult `json:"amlScreeningResult"`
+	CustomerRefId                 string             `json:"customerRefId"`
 }
 
 type VaultAccount struct {
@@ -135,6 +225,7 @@ type fireblocksClaims struct {
 }
 
 func New(assetId string, baseUrl string, sourceType accounttype.AccountType, sourceId string, apiKey string, signKey *rsa.PrivateKey) *Fireblocks {
+	rand.Seed(time.Now().UnixNano())
 	return &Fireblocks{
 		apiKey:     apiKey,
 		assetId:    assetId,
@@ -145,14 +236,29 @@ func New(assetId string, baseUrl string, sourceType accounttype.AccountType, sou
 	}
 }
 
-func (fb *Fireblocks) ListVaultAccounts() (*ListVaultAccountsResult, error) {
+func (fb *Fireblocks) ListTransactions() (*[]TransactionDetails, error) {
+	resp, err := fb.sendRequest("/v1/transactions", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var result []TransactionDetails
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	if err != nil {
+		return nil, err
+	}
+
+	return &result, err
+}
+
+func (fb *Fireblocks) ListVaultAccounts() (*[]VaultAccount, error) {
 	resp, err := fb.sendRequest("/v1/vault/accounts", nil)
 	if err != nil {
 		return nil, err
 	}
 
-	var result ListVaultAccountsResult
-	err = json.NewDecoder(resp.Body).Decode(&result.VaultAccounts)
+	var result []VaultAccount
+	err = json.NewDecoder(resp.Body).Decode(&result)
 	if err != nil {
 		return nil, err
 	}
@@ -170,7 +276,9 @@ func (fb *Fireblocks) CreateNewTransaction(destinationType accounttype.AccountTy
 	if destination.Type == accounttype.OneTimeAddress {
 		destination.OneTimeAddress = OneTimeAddress{
 			Address: destinationId,
-			Tag:     destinationTag,
+		}
+		if len(destinationTag) > 0 {
+			destination.OneTimeAddress.Tag = destinationTag
 		}
 	} else {
 		destination.Id = destinationId
@@ -190,6 +298,7 @@ func (fb *Fireblocks) CreateNewTransaction(destinationType accounttype.AccountTy
 		return nil, err
 	}
 
+	logger.Debug().RawJSON("request", jsonData).Msg("creating new fireblocks transaction")
 	resp, err := fb.sendRequest("/v1/transactions", jsonData)
 	if err != nil {
 		return nil, err
@@ -201,6 +310,9 @@ func (fb *Fireblocks) CreateNewTransaction(destinationType accounttype.AccountTy
 		return nil, err
 	}
 
+	if len(result) > 0 {
+		logger.Debug().Str("id", result[0].Id).Str("status", result[0].Status).Msg("fireblocks response")
+	}
 	return &result, err
 }
 

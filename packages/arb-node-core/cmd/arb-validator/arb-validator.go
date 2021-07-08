@@ -96,6 +96,10 @@ func startup() error {
 
 	defer logger.Log().Msg("Cleanly shutting down validator")
 
+	if err := cmdhelp.ParseLogFlags(&config.Log.RPC, &config.Log.Core); err != nil {
+		return err
+	}
+
 	if config.PProfEnable {
 		go func() {
 			err := http.ListenAndServe("localhost:8081", pprofMux)
@@ -131,7 +135,7 @@ func startup() error {
 	bridgeUtilsAddr := ethcommon.HexToAddress(config.BridgeUtilsAddress)
 	validatorUtilsAddr := ethcommon.HexToAddress(config.Validator.UtilsAddress)
 	validatorWalletFactoryAddr := ethcommon.HexToAddress(config.Validator.WalletFactoryAddress)
-	auth, _, err := cmdhelp.GetKeystore(config.Persistent.Chain, wallet, config.GasPrice, l1ChainId)
+	auth, _, err := cmdhelp.GetKeystore(config, wallet, l1ChainId)
 	if err != nil {
 		return errors.Wrap(err, "error loading wallet keystore")
 	}
@@ -181,7 +185,12 @@ func startup() error {
 			logger.Warn().Err(err).
 				Str("sender", auth.From.Hex()).
 				Msg("Failed to deploy validator wallet")
-			time.Sleep(time.Second * 5)
+
+			select {
+			case <-ctx.Done():
+				return nil
+			case <-time.After(time.Second * 5):
+			}
 		}
 		chainState.ValidatorWallet = validatorAddress.String()
 

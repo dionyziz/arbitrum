@@ -61,13 +61,15 @@ type Feed struct {
 }
 
 type Fireblocks struct {
-	APIKey       string `koanf:"api-key"`
-	BaseURL      string `koanf:"base-url"`
-	ListAccounts bool   `koanf:"list-accounts"`
-	PrivateKey   string `koanf:"private-key"`
-	KeyPassword  string `koanf:"key-password"`
-	SourceId     string `koanf:"source-id"`
-	SourceType   string `koanf:"source-type"`
+	APIKey        string `koanf:"api-key,omitempty"`
+	AssetId       string `koanf:"asset-id,omitempty"`
+	BaseURL       string `koanf:"base-url,omitempty"`
+	ListAccounts  bool   `koanf:"list-accounts,omitempty"`
+	PrivateKey    string `koanf:"private-key,omitempty"`
+	KeyPassword   string `koanf:"key-password,omitempty"`
+	SourceAddress string `koanf:"source-address,omitempty"`
+	SourceId      string `koanf:"source-id,omitempty"`
+	SourceType    string `koanf:"source-type,omitempty"`
 }
 
 type Healthcheck struct {
@@ -224,8 +226,6 @@ func ParseValidator(ctx context.Context) (*Config, *Wallet, *ethutils.RPCEthClie
 
 func ParseNonRelay(ctx context.Context, f *flag.FlagSet) (*Config, *Wallet, *ethutils.RPCEthClient, *big.Int, error) {
 	f.String("bridge-utils-address", "", "bridgeutils contract address")
-
-	f.Bool("fireblocks.list-accounts", false, "Print out list of fireblocks accounts and exit")
 
 	f.Float64("gas-price", 4.5, "gasprice=FloatInGwei")
 	f.String("gas-price-url", "", "gas price rpc url (etherscan compatible)")
@@ -553,7 +553,7 @@ func endCommonParse(f *flag.FlagSet, k *koanf.Koanf) (*Config, *Wallet, error) {
 	}
 
 	if len(out.Fireblocks.APIKey) != 0 || len(out.Fireblocks.BaseURL) != 0 || len(out.Fireblocks.PrivateKey) != 0 ||
-		len(out.Fireblocks.SourceId) == 0 || len(out.Fireblocks.SourceType) != 0 {
+		len(out.Fireblocks.SourceAddress) != 0 || len(out.Fireblocks.SourceId) == 0 || len(out.Fireblocks.SourceType) != 0 {
 		if len(out.Fireblocks.APIKey) == 0 {
 			return nil, nil, errors.New("fireblocks configured but missing fireblocks.api-key")
 		}
@@ -562,6 +562,9 @@ func endCommonParse(f *flag.FlagSet, k *koanf.Koanf) (*Config, *Wallet, error) {
 		}
 		if len(out.Fireblocks.PrivateKey) == 0 {
 			return nil, nil, errors.New("fireblocks configured but missing fireblocks.private-key")
+		}
+		if len(out.Fireblocks.SourceAddress) == 0 {
+			return nil, nil, errors.New("fireblocks configured but missing fireblocks.source-address")
 		}
 		if len(out.Fireblocks.SourceId) == 0 {
 			return nil, nil, errors.New("fireblocks configured but missing fireblocks.source-id")
@@ -583,16 +586,29 @@ func endCommonParse(f *flag.FlagSet, k *koanf.Koanf) (*Config, *Wallet, error) {
 				return nil, nil, errors.Wrap(err, "unable to initialize private key to list fireblocks accounts")
 			}
 
-			fb := fireblocks.New("ETH", out.Fireblocks.BaseURL, *sourceType, out.Fireblocks.SourceId, out.Fireblocks.APIKey, signKey)
+			fb := fireblocks.New(out.Fireblocks.AssetId, out.Fireblocks.BaseURL, *sourceType, out.Fireblocks.SourceId, out.Fireblocks.APIKey, signKey)
 
-			result, err := fb.ListVaultAccounts()
+			accounts, err := fb.ListVaultAccounts()
 			if err != nil {
 				return nil, nil, errors.Wrap(err, "unable to send query to list fireblocks accounts")
 			}
 
 			fmt.Println("Fireblocks accounts:")
-			for _, account := range result.VaultAccounts {
+			for _, account := range *accounts {
 				fmt.Printf("%s\t%s\n", account.Id, account.Name)
+				for _, asset := range account.Assets {
+					fmt.Printf("\t%s\t%s\t%s\n", asset.Id, asset.Balance, asset.Pending)
+				}
+			}
+
+			txs, err := fb.ListTransactions()
+			if err != nil {
+				return nil, nil, errors.Wrap(err, "unable to send query to list fireblocks transactions")
+			}
+
+			fmt.Println("Fireblocks transactions:")
+			for _, tx := range *txs {
+				fmt.Printf("%s,%s,%s,%s,%s,%s,%s\n", tx.Id, tx.Status, tx.SubStatus, tx.AssetId, tx.TxHash, tx.Destination.Type, tx.DestinationAddress)
 			}
 
 			os.Exit(0)
