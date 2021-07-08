@@ -317,6 +317,20 @@ func (fb *Fireblocks) CreateNewTransaction(destinationType accounttype.AccountTy
 }
 
 func (fb *Fireblocks) sendRequest(path string, body []byte) (*http.Response, error) {
+	for {
+		resp, err := fb.sendRequestImpl(path, body)
+		if err == nil {
+			return resp, err
+		} else if strings.Contains("nonce was already used", err.Error()) {
+			// Duplicate nonce used, try again
+			logger.Warn().Msg("duplicate nonce sent to fireblocks")
+			continue
+		}
+
+		return resp, err
+	}
+}
+func (fb *Fireblocks) sendRequestImpl(path string, body []byte) (*http.Response, error) {
 	token, err := fb.signJWT(path, body)
 	if err != nil {
 		return nil, err
@@ -359,6 +373,16 @@ func (fb *Fireblocks) sendRequest(path string, body []byte) (*http.Response, err
 		}
 
 		bodyStr := string(body)
+		if strings.Contains("nonce was already used", bodyStr) {
+			logger.
+				Error().
+				Str("url", url).
+				Str("status", resp.Status).
+				Str("body", bodyStr).
+				Msg("error returned when posting fireblocks request")
+			return nil, fmt.Errorf("nonce was already used")
+		}
+
 		logger.
 			Error().
 			Str("url", url).
@@ -380,7 +404,7 @@ func (fb *Fireblocks) signJWT(path string, body []byte) (string, error) {
 
 	claims := fireblocksClaims{
 		Uri:      newPath,
-		Nonce:    rand.Int63(),
+		Nonce:    1,
 		Iat:      now,
 		Exp:      now + 55,
 		Sub:      fb.apiKey,
