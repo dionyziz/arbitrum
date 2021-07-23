@@ -17,7 +17,7 @@ Returns the proof necessary to redeem a message
 
 **Returns**: proof: Merkle proof of message inclusion in outbox entry
 
-**Returns**: path: Index of message in outbox entry
+**Returns**: path: Merkle path to message
 
 **Returns**: l2Sender: sender if original message (i.e., caller of ArbSys.sendTxToL1)
 

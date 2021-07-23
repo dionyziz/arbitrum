@@ -11,7 +11,7 @@ Get the address of the Node contract for the given node
 
 **Returns**: Address: of the Node contract
 
-### `getStakerAddress(uint256 stakerNum) → address` (public)
+### `getStakerAddress(uint256 stakerNum) → address` (external)
 
 Get the address of the staker at the given index
 
@@ -73,7 +73,7 @@ Get Latest node that the given zombie at the given index is staked on
 
 ### `isZombie(address staker) → bool` (public)
 
-### `withdrawableFunds(address owner) → uint256` (public)
+### `withdrawableFunds(address owner) → uint256` (external)
 
 Get the amount of funds withdrawable by the given address
 
@@ -95,7 +95,7 @@ If all nodes have been resolved, this will be latestNodeCreated + 1
 
 **Returns**: Index: of the latest rollup node created
 
-### `lastStakeBlock() → uint256` (public)
+### `lastStakeBlock() → uint256` (external)
 
 **Returns**: Ethereum: block that the most recent stake was created
 

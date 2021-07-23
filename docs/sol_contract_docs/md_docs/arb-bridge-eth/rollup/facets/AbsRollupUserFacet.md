@@ -11,7 +11,7 @@ id: AbsRollupUserFacet
 
 Reject the next unresolved node
 
-- `stakerAddress`: Example staker staked on sibling
+- `stakerAddress`: Example staker staked on sibling, used to prove a node is on an unconfirmable branch and can be rejected
 
 ### `confirmNextNode(bytes32 beforeSendAcc, bytes sendsData, uint256[] sendLengths, uint256 afterSendCount, bytes32 afterLogAcc, uint256 afterLogCount)` (external)
 
@@ -31,21 +31,25 @@ Confirm the next unresolved node
 
 ### `stakeOnExistingNode(uint256 nodeNum, bytes32 nodeHash)` (external)
 
-Move stake onto an existing node
+Move stake onto existing child node
 
-- `nodeNum`: Inbox of the node to move stake to. This must by a child of the node the staker is currently staked on
+- `nodeNum`: Index of the node to move stake to. This must by a child of the node the staker is currently staked on
 
 - `nodeHash`: Node hash of nodeNum (protects against reorgs)
 
 ### `stakeOnNewNode(bytes32 expectedNodeHash, bytes32[3][2] assertionBytes32Fields, uint256[4][2] assertionIntFields, uint256 beforeProposedBlock, uint256 beforeInboxMaxCount, bytes sequencerBatchProof)` (external)
 
-Move stake onto a new node
+Create a new node and move stake onto it
 
 - `expectedNodeHash`: The hash of the node being created (protects against reorgs)
 
 - `assertionBytes32Fields`: Assertion data for creating
 
 - `assertionIntFields`: Assertion data for creating
+
+- `beforeProposedBlock`: Block number at previous assertion
+  @ @param beforeInboxMaxCount Inbox count at previous assertion
+  @ @param sequencerBatchProof Proof data for ensuring expected state of inbox (used in Nodehash to protect against reorgs)
 
 ### `returnOldDeposit(address stakerAddress)` (external)
 
@@ -67,7 +71,7 @@ Reduce the amount staked for the sender
 
 ### `createChallenge(address payable[2] stakers, uint256[2] nodeNums, bytes32[2] executionHashes, uint256[2] proposedTimes, uint256[2] maxMessageCounts)` (external)
 
-Start a challenge between the given stakers over the node created by the first staker assuming that the two are staked on conflicting nodes
+Start a challenge between the given stakers over the node created by the first staker assuming that the two are staked on conflicting nodes. N.B.: challenge creator does not necessarily need to be one of the two asserters.
 
 - `stakers`: Stakers engaged in the challenge. The first staker should be staked on the first node
 
@@ -83,8 +87,6 @@ Start a challenge between the given stakers over the node created by the first s
 ### `completeChallenge(address winningStaker, address losingStaker)` (external)
 
 Inform the rollup that the challenge between the given stakers is completed
-
-completeChallenge isn't pausable since in flight challenges should be allowed to complete or else they could be forced to timeout
 
 - `winningStaker`: Address of the winning staker
 
@@ -107,7 +109,7 @@ Remove any zombies whose latest stake is earlier than the first unresolved node
 - `startIndex`: Index in the zombie list to start removing zombies from (to limit the cost of this transaction)
   /
 
-### `requiredStake(uint256 blockNumber, uint256 firstUnresolvedNodeNum, uint256 latestNodeCreated) → uint256` (public)
+### `requiredStake(uint256 blockNumber, uint256 firstUnresolvedNodeNum, uint256 latestCreatedNode) → uint256` (external)
 
 Calculate the current amount of funds required to place a new stake in the rollup
 

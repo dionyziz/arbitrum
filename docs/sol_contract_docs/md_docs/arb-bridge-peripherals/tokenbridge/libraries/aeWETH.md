@@ -5,7 +5,7 @@ id: aeWETH
 
 Arbitrum extended WETH
 
-### `initialize(string _name, string _symbol, uint8 _decimals, address _l2Gateway, address _l1Address)` (external)
+### `initialize(string name_, string symbol_, uint8 decimals_, address l2Gateway_, address l1Address_)` (external)
 
 ### `bridgeMint(address account, uint256 amount)` (external)
 

@@ -22,3 +22,9 @@ id: IBridge
 ### `messageCount() → uint256` (external)
 
 ### `MessageDelivered(uint256 messageIndex, bytes32 beforeInboxAcc, address inbox, uint8 kind, address sender, bytes32 messageDataHash)`
+
+### `BridgeCallTriggered(address outbox, address destAddr, uint256 amount, bytes data)`
+
+### `InboxToggle(address inbox, bool enabled)`
+
+### `OutboxToggle(address outbox, bool enabled)`

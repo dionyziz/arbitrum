@@ -7,9 +7,9 @@ id: L1ArbitrumExtendedGateway
 
 Allows a user to redirect their right to claim a withdrawal to another address.
 
-This method also allows you to make an arbitrary call after the transfer, similar to ERC677.
-This does not change the original data that will be triggered with the withdrawal's external call.
-The exit receiver is the one to
+This method also allows you to make an arbitrary call after the transfer.
+This does not validate if the exit was already triggered. It is assumed the `_exitNum` is
+validated off-chain to ensure this was not yet triggered.
 
 - `_exitNum`: Sequentially increasing exit counter determined by the L2 bridge
 
@@ -22,6 +22,8 @@ The exit receiver is the one to
 - `_data`: optional data for external call upon transfering the exit
 
 ### `getExternalCall(uint256 _exitNum, address _initialDestination, bytes _initialData) → address target, bytes data` (public)
+
+this does not verify if the external call was already done
 
 ### `encodeWithdrawal(uint256 _exitNum, address _initialDestination) → bytes32` (public)
 

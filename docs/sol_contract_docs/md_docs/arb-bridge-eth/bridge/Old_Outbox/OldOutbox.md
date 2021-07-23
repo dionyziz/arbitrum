@@ -1,6 +1,6 @@
 ---
-title: Outbox.sol Spec
-id: Outbox
+title: OldOutbox.sol Spec
+id: OldOutbox
 ---
 
 ### `initialize(address _rollup, contract IBridge _bridge)` (external)
@@ -18,11 +18,11 @@ When the return value is zero, that means this is a system message
 
 ### `processOutgoingMessages(bytes sendsData, uint256[] sendLengths)` (external)
 
-### `executeTransaction(uint256 batchNum, bytes32[] proof, uint256 index, address l2Sender, address destAddr, uint256 l2Block, uint256 l1Block, uint256 l2Timestamp, uint256 amount, bytes calldataForL1)` (external)
+### `executeTransaction(uint256 outboxIndex, bytes32[] proof, uint256 index, address l2Sender, address destAddr, uint256 l2Block, uint256 l1Block, uint256 l2Timestamp, uint256 amount, bytes calldataForL1)` (external)
 
-Executes a messages in an Outbox entry. Reverts if dispute period hasn't expired
+Executes a messages in an Outbox entry. Reverts if dispute period hasn't expired and
 
-- `batchNum`: Index of OutboxEntry in outboxEntries array
+- `outboxIndex`: Index of OutboxEntry in outboxes array
 
 - `proof`: Merkle proof of message inclusion in outbox entry
 
@@ -47,3 +47,5 @@ Executes a messages in an Outbox entry. Reverts if dispute period hasn't expired
 ### `calculateMerkleRoot(bytes32[] proof, uint256 path, bytes32 item) → bytes32` (public)
 
 ### `outboxEntryExists(uint256 batchNum) → bool` (public)
+
+### `outboxesLength() → uint256` (public)

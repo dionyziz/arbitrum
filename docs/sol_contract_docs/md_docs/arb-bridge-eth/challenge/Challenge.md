@@ -31,7 +31,7 @@ or follows another execution objection
 
 ### `proveContinuedExecution(bytes32[] _merkleNodes, uint256 _merkleRoute, uint256 _challengedSegmentStart, uint256 _challengedSegmentLength, bytes32 _oldEndHash, uint256 _gasUsedBefore, bytes32 _assertionRest)` (external)
 
-### `oneStepProveExecution(bytes32[] _merkleNodes, uint256 _merkleRoute, uint256 _challengedSegmentStart, uint256 _challengedSegmentLength, bytes32 _oldEndHash, uint256 _initialMessagesRead, bytes32[2] _initialAccs, uint256[3] _initialState, bytes _executionProof, bytes _bufferProof, uint8 prover)` (public)
+### `oneStepProveExecution(bytes32[] _merkleNodes, uint256 _merkleRoute, uint256 _challengedSegmentStart, uint256 _challengedSegmentLength, bytes32 _oldEndHash, uint256 _initialMessagesRead, bytes32[2] _initialAccs, uint256[3] _initialState, bytes _executionProof, bytes _bufferProof, uint8 prover)` (external)
 
 ### `timeout()` (external)
 

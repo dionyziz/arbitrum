@@ -27,7 +27,7 @@ Finalizes a withdrawal via Outbox message; callable only by L2Gateway.outboundTr
 
 ### `parseInboundData(bytes _data) → uint256 _exitNum, bytes _extraData` (public)
 
-### `outboundTransfer(address _l1Token, address _to, uint256 _amount, uint256 _maxGas, uint256 _gasPriceBid, bytes _data) → bytes res` (external)
+### `outboundTransfer(address _l1Token, address _to, uint256 _amount, uint256 _maxGas, uint256 _gasPriceBid, bytes _data) → bytes res` (public)
 
 Deposit ERC20 token from Ethereum into Arbitrum. If L2 side hasn't been deployed yet, includes name/symbol/decimals data for initial L2 deploy. Initiate by GatewayRouter.
 

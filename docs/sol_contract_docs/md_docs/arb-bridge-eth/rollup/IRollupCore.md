@@ -102,3 +102,17 @@ If all nodes have been resolved, this will be latestNodeCreated + 1
 ### `getNodeHash(uint256 index) → bytes32` (external)
 
 **Returns**: Node: hash as of this node number
+
+### `RollupCreated(bytes32 machineHash)`
+
+### `NodeCreated(uint256 nodeNum, bytes32 parentNodeHash, bytes32 nodeHash, bytes32 executionHash, uint256 inboxMaxCount, uint256 afterInboxBatchEndCount, bytes32 afterInboxBatchAcc, bytes32[3][2] assertionBytes32Fields, uint256[4][2] assertionIntFields)`
+
+### `NodeConfirmed(uint256 nodeNum, bytes32 afterSendAcc, uint256 afterSendCount, bytes32 afterLogAcc, uint256 afterLogCount)`
+
+### `NodeRejected(uint256 nodeNum)`
+
+### `RollupChallengeStarted(address challengeContract, address asserter, address challenger, uint256 challengedNode)`
+
+### `UserStakeUpdated(address user, uint256 initialBalance, uint256 finalBalance)`
+
+### `UserWithdrawableFundsUpdated(address user, uint256 initialBalance, uint256 finalBalance)`

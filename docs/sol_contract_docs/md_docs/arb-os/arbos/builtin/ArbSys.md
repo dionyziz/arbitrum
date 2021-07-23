@@ -11,6 +11,8 @@ Get internal version number identifying an ArbOS build
 
 **Returns**: version: number as int
 
+### `arbChainID() → uint256` (external)
+
 ### `arbBlockNumber() → uint256` (external)
 
 Get Arbitrum block number (distinct from L1 block number; Arbitrum genesis block has block number 0)

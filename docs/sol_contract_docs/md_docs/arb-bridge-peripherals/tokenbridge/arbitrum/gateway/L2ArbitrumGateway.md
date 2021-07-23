@@ -5,6 +5,8 @@ id: L2ArbitrumGateway
 
 Common interface for gatways on Arbitrum messaging to L1.
 
+### `postUpgradeInit()` (external)
+
 ### `gasReserveIfCallRevert() → uint256` (public)
 
 ### `getOutboundCalldata(address _token, address _from, address _to, uint256 _amount, bytes _data) → bytes outboundCalldata` (public)

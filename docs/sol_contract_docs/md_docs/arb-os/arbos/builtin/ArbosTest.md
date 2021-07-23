@@ -8,3 +8,5 @@ id: ArbosTest
 ### `getMarshalledStorage(address addr)` (external)
 
 ### `getAccountInfo(address addr)` (external)
+
+### `burnArbGas(uint256 gasAmount)` (external)

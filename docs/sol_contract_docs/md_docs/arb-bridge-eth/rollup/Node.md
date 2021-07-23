@@ -41,8 +41,6 @@ Remove the given staker from this node
 
 ### `childCreated(uint256 number)` (external)
 
-### `resetChildren()` (external)
-
 ### `newChildConfirmDeadline(uint256 deadline)` (external)
 
 ### `requirePastDeadline()` (external)

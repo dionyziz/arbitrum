@@ -25,7 +25,8 @@ Enable or disable an inbox contract
 
 ### `pause()` (external)
 
-Pause interaction with the rollup contract
+Pause interaction with the rollup contract.
+The time spent paused is not incremented in the rollup's timing for node validation.
 
 ### `resume()` (external)
 
@@ -150,3 +151,11 @@ Upgrades the implementation of a beacon controlled by the rollup
 - `beacon`: address of beacon to be upgraded
 
 - `newImplementation`: new address of implementation
+
+### `forceResolveChallenge(address[] stakerA, address[] stakerB)` (external)
+
+### `forceRefundStaker(address[] staker)` (external)
+
+### `forceCreateNode(bytes32 expectedNodeHash, bytes32[3][2] assertionBytes32Fields, uint256[4][2] assertionIntFields, bytes sequencerBatchProof, uint256 beforeProposedBlock, uint256 beforeInboxMaxCount, uint256 prevNode)` (external)
+
+### `forceConfirmNode(uint256 nodeNum, bytes32 beforeSendAcc, bytes sendsData, uint256[] sendLengths, uint256 afterSendCount, bytes32 afterLogAcc, uint256 afterLogCount)` (external)

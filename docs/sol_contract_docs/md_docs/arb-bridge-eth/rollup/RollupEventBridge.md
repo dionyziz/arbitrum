@@ -16,5 +16,3 @@ id: RollupEventBridge
 ### `nodeRejected(uint256 nodeNum)` (external)
 
 ### `stakeCreated(address staker, uint256 nodeNum)` (external)
-
-### `claimNode(uint256 nodeNum, address staker)` (external)

@@ -1,6 +1,6 @@
 ---
-title: IERC677Receiver.sol Spec
-id: IERC677Receiver
+title: ITransferAndCallReceiver.sol Spec
+id: ITransferAndCallReceiver
 ---
 
 ### `onTokenTransfer(address _sender, uint256 _value, bytes _data)` (external)
