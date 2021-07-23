@@ -18,7 +18,7 @@
 
 pragma solidity ^0.6.11;
 
-import "../../libraries/IERC677.sol";
+import "../../libraries/ITransferAndCall.sol";
 
 import "./L1ArbitrumGateway.sol";
 
@@ -84,12 +84,11 @@ abstract contract L1ArbitrumExtendedGateway is L1ArbitrumGateway {
 
         if (_data.length > 0) {
             require(_newDestination.isContract(), "TO_NOT_CONTRACT");
-            bool success =
-                ITradeableExitReceiver(_newDestination).onExitTransfer(
-                    expectedSender,
-                    _exitNum,
-                    _data
-                );
+            bool success = ITradeableExitReceiver(_newDestination).onExitTransfer(
+                expectedSender,
+                _exitNum,
+                _data
+            );
             require(success, "TRANSFER_HOOK_FAIL");
         }
 

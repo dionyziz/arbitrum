@@ -20,9 +20,9 @@ pragma solidity ^0.6.11;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "../misc/L1PassiveFastExitManager.sol";
-import "../libraries/IERC677.sol";
+import "../libraries/ITransferAndCall.sol";
 
-contract FastExitMock is IExitLiquidityProvider, IERC677Receiver {
+contract FastExitMock is IExitLiquidityProvider, ITransferAndCallReceiver {
     uint256 fee = 0;
     bytes constant RETVALUE = "0x1234";
 

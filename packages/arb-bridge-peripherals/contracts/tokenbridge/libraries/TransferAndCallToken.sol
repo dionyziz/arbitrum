@@ -2,11 +2,11 @@
 pragma solidity >0.6.0 <0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
-import "./IERC677.sol";
+import "./ITransferAndCall.sol";
 
-// Implementation from https://github.com/smartcontractkit/LinkToken/blob/master/contracts/v0.6/ERC677Token.sol
+// Implementation from https://github.com/smartcontractkit/LinkToken/blob/master/contracts/v0.6/TransferAndCallToken.sol
 
-abstract contract ERC677Token is ERC20Upgradeable, IERC677 {
+abstract contract TransferAndCallToken is ERC20Upgradeable, ITransferAndCall {
     /**
      * @dev transfer token to a contract address with additional data if the recipient is a contact.
      * @param _to The address to transfer to.
@@ -33,7 +33,7 @@ abstract contract ERC677Token is ERC20Upgradeable, IERC677 {
         uint256 _value,
         bytes memory _data
     ) private {
-        IERC677Receiver receiver = IERC677Receiver(_to);
+        ITransferAndCallReceiver receiver = ITransferAndCallReceiver(_to);
         receiver.onTokenTransfer(msg.sender, _value, _data);
     }
 
