@@ -5,7 +5,10 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "./ITransferAndCall.sol";
 
 // Implementation from https://github.com/smartcontractkit/LinkToken/blob/master/contracts/v0.6/TransferAndCallToken.sol
-
+/**
+ * @notice based on Implementation from https://github.com/smartcontractkit/LinkToken/blob/master/contracts/v0.6/ERC677Token.sol
+ * Implementation doesn't return a bool on onTokenTransfer, and so doesn't adhere to the proposed 677 standard, thus, tho it's similar to ERC677, we don't refer to it as such.
+ */
 abstract contract TransferAndCallToken is ERC20Upgradeable, ITransferAndCall {
     /**
      * @dev transfer token to a contract address with additional data if the recipient is a contact.
