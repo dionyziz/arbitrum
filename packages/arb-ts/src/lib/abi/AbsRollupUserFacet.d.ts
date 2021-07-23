@@ -22,6 +22,8 @@ import { FunctionFragment, EventFragment, Result } from '@ethersproject/abi'
 
 interface AbsRollupUserFacetInterface extends ethers.utils.Interface {
   functions: {
+    'STORAGE_GAP_1()': FunctionFragment
+    'STORAGE_GAP_2()': FunctionFragment
     '_stakerMap(address)': FunctionFragment
     'amountStaked(address)': FunctionFragment
     'arbGasSpeedLimitPerBlock()': FunctionFragment
@@ -64,8 +66,6 @@ interface AbsRollupUserFacetInterface extends ethers.utils.Interface {
     'returnOldDeposit(address)': FunctionFragment
     'rollupEventBridge()': FunctionFragment
     'sequencerBridge()': FunctionFragment
-    'sequencerInboxMaxDelayBlocks()': FunctionFragment
-    'sequencerInboxMaxDelaySeconds()': FunctionFragment
     'stakeOnExistingNode(uint256,bytes32)': FunctionFragment
     'stakeOnNewNode(bytes32,bytes32[3][2],uint256[4][2],uint256,uint256,bytes)': FunctionFragment
     'stakeToken()': FunctionFragment
@@ -77,6 +77,14 @@ interface AbsRollupUserFacetInterface extends ethers.utils.Interface {
     'zombieLatestStakedNode(uint256)': FunctionFragment
   }
 
+  encodeFunctionData(
+    functionFragment: 'STORAGE_GAP_1',
+    values?: undefined
+  ): string
+  encodeFunctionData(
+    functionFragment: 'STORAGE_GAP_2',
+    values?: undefined
+  ): string
   encodeFunctionData(functionFragment: '_stakerMap', values: [string]): string
   encodeFunctionData(functionFragment: 'amountStaked', values: [string]): string
   encodeFunctionData(
@@ -229,14 +237,6 @@ interface AbsRollupUserFacetInterface extends ethers.utils.Interface {
     values?: undefined
   ): string
   encodeFunctionData(
-    functionFragment: 'sequencerInboxMaxDelayBlocks',
-    values?: undefined
-  ): string
-  encodeFunctionData(
-    functionFragment: 'sequencerInboxMaxDelaySeconds',
-    values?: undefined
-  ): string
-  encodeFunctionData(
     functionFragment: 'stakeOnExistingNode',
     values: [BigNumberish, BytesLike]
   ): string
@@ -280,6 +280,14 @@ interface AbsRollupUserFacetInterface extends ethers.utils.Interface {
     values: [BigNumberish]
   ): string
 
+  decodeFunctionResult(
+    functionFragment: 'STORAGE_GAP_1',
+    data: BytesLike
+  ): Result
+  decodeFunctionResult(
+    functionFragment: 'STORAGE_GAP_2',
+    data: BytesLike
+  ): Result
   decodeFunctionResult(functionFragment: '_stakerMap', data: BytesLike): Result
   decodeFunctionResult(
     functionFragment: 'amountStaked',
@@ -413,14 +421,6 @@ interface AbsRollupUserFacetInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result
   decodeFunctionResult(
-    functionFragment: 'sequencerInboxMaxDelayBlocks',
-    data: BytesLike
-  ): Result
-  decodeFunctionResult(
-    functionFragment: 'sequencerInboxMaxDelaySeconds',
-    data: BytesLike
-  ): Result
-  decodeFunctionResult(
     functionFragment: 'stakeOnExistingNode',
     data: BytesLike
   ): Result
@@ -452,25 +452,25 @@ interface AbsRollupUserFacetInterface extends ethers.utils.Interface {
     'NodeConfirmed(uint256,bytes32,uint256,bytes32,uint256)': EventFragment
     'NodeCreated(uint256,bytes32,bytes32,bytes32,uint256,uint256,bytes32,bytes32[3][2],uint256[4][2])': EventFragment
     'NodeRejected(uint256)': EventFragment
-    'NodesDestroyed(uint256,uint256)': EventFragment
-    'OwnerFunctionCalled(uint256)': EventFragment
     'Paused(address)': EventFragment
     'RollupChallengeStarted(address,address,address,uint256)': EventFragment
     'RollupCreated(bytes32)': EventFragment
-    'StakerReassigned(address,uint256)': EventFragment
     'Unpaused(address)': EventFragment
+    'UserStakeUpdated(address,uint256,uint256)': EventFragment
+    'UserWithdrawableFundsUpdated(address,uint256,uint256)': EventFragment
   }
 
   getEvent(nameOrSignatureOrTopic: 'NodeConfirmed'): EventFragment
   getEvent(nameOrSignatureOrTopic: 'NodeCreated'): EventFragment
   getEvent(nameOrSignatureOrTopic: 'NodeRejected'): EventFragment
-  getEvent(nameOrSignatureOrTopic: 'NodesDestroyed'): EventFragment
-  getEvent(nameOrSignatureOrTopic: 'OwnerFunctionCalled'): EventFragment
   getEvent(nameOrSignatureOrTopic: 'Paused'): EventFragment
   getEvent(nameOrSignatureOrTopic: 'RollupChallengeStarted'): EventFragment
   getEvent(nameOrSignatureOrTopic: 'RollupCreated'): EventFragment
-  getEvent(nameOrSignatureOrTopic: 'StakerReassigned'): EventFragment
   getEvent(nameOrSignatureOrTopic: 'Unpaused'): EventFragment
+  getEvent(nameOrSignatureOrTopic: 'UserStakeUpdated'): EventFragment
+  getEvent(
+    nameOrSignatureOrTopic: 'UserWithdrawableFundsUpdated'
+  ): EventFragment
 }
 
 export class AbsRollupUserFacet extends Contract {
@@ -487,6 +487,14 @@ export class AbsRollupUserFacet extends Contract {
   interface: AbsRollupUserFacetInterface
 
   functions: {
+    STORAGE_GAP_1(overrides?: CallOverrides): Promise<[BigNumber]>
+
+    'STORAGE_GAP_1()'(overrides?: CallOverrides): Promise<[BigNumber]>
+
+    STORAGE_GAP_2(overrides?: CallOverrides): Promise<[BigNumber]>
+
+    'STORAGE_GAP_2()'(overrides?: CallOverrides): Promise<[BigNumber]>
+
     _stakerMap(
       arg0: string,
       overrides?: CallOverrides
@@ -793,14 +801,14 @@ export class AbsRollupUserFacet extends Contract {
     requiredStake(
       blockNumber: BigNumberish,
       firstUnresolvedNodeNum: BigNumberish,
-      latestNodeCreated: BigNumberish,
+      latestCreatedNode: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>
 
     'requiredStake(uint256,uint256,uint256)'(
       blockNumber: BigNumberish,
       firstUnresolvedNodeNum: BigNumberish,
-      latestNodeCreated: BigNumberish,
+      latestCreatedNode: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>
 
@@ -821,22 +829,6 @@ export class AbsRollupUserFacet extends Contract {
     sequencerBridge(overrides?: CallOverrides): Promise<[string]>
 
     'sequencerBridge()'(overrides?: CallOverrides): Promise<[string]>
-
-    sequencerInboxMaxDelayBlocks(
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>
-
-    'sequencerInboxMaxDelayBlocks()'(
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>
-
-    sequencerInboxMaxDelaySeconds(
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>
-
-    'sequencerInboxMaxDelaySeconds()'(
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>
 
     stakeOnExistingNode(
       nodeNum: BigNumberish,
@@ -934,6 +926,14 @@ export class AbsRollupUserFacet extends Contract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>
   }
+
+  STORAGE_GAP_1(overrides?: CallOverrides): Promise<BigNumber>
+
+  'STORAGE_GAP_1()'(overrides?: CallOverrides): Promise<BigNumber>
+
+  STORAGE_GAP_2(overrides?: CallOverrides): Promise<BigNumber>
+
+  'STORAGE_GAP_2()'(overrides?: CallOverrides): Promise<BigNumber>
 
   _stakerMap(
     arg0: string,
@@ -1228,14 +1228,14 @@ export class AbsRollupUserFacet extends Contract {
   requiredStake(
     blockNumber: BigNumberish,
     firstUnresolvedNodeNum: BigNumberish,
-    latestNodeCreated: BigNumberish,
+    latestCreatedNode: BigNumberish,
     overrides?: CallOverrides
   ): Promise<BigNumber>
 
   'requiredStake(uint256,uint256,uint256)'(
     blockNumber: BigNumberish,
     firstUnresolvedNodeNum: BigNumberish,
-    latestNodeCreated: BigNumberish,
+    latestCreatedNode: BigNumberish,
     overrides?: CallOverrides
   ): Promise<BigNumber>
 
@@ -1256,18 +1256,6 @@ export class AbsRollupUserFacet extends Contract {
   sequencerBridge(overrides?: CallOverrides): Promise<string>
 
   'sequencerBridge()'(overrides?: CallOverrides): Promise<string>
-
-  sequencerInboxMaxDelayBlocks(overrides?: CallOverrides): Promise<BigNumber>
-
-  'sequencerInboxMaxDelayBlocks()'(
-    overrides?: CallOverrides
-  ): Promise<BigNumber>
-
-  sequencerInboxMaxDelaySeconds(overrides?: CallOverrides): Promise<BigNumber>
-
-  'sequencerInboxMaxDelaySeconds()'(
-    overrides?: CallOverrides
-  ): Promise<BigNumber>
 
   stakeOnExistingNode(
     nodeNum: BigNumberish,
@@ -1366,6 +1354,14 @@ export class AbsRollupUserFacet extends Contract {
   ): Promise<BigNumber>
 
   callStatic: {
+    STORAGE_GAP_1(overrides?: CallOverrides): Promise<BigNumber>
+
+    'STORAGE_GAP_1()'(overrides?: CallOverrides): Promise<BigNumber>
+
+    STORAGE_GAP_2(overrides?: CallOverrides): Promise<BigNumber>
+
+    'STORAGE_GAP_2()'(overrides?: CallOverrides): Promise<BigNumber>
+
     _stakerMap(
       arg0: string,
       overrides?: CallOverrides
@@ -1656,14 +1652,14 @@ export class AbsRollupUserFacet extends Contract {
     requiredStake(
       blockNumber: BigNumberish,
       firstUnresolvedNodeNum: BigNumberish,
-      latestNodeCreated: BigNumberish,
+      latestCreatedNode: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>
 
     'requiredStake(uint256,uint256,uint256)'(
       blockNumber: BigNumberish,
       firstUnresolvedNodeNum: BigNumberish,
-      latestNodeCreated: BigNumberish,
+      latestCreatedNode: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>
 
@@ -1684,18 +1680,6 @@ export class AbsRollupUserFacet extends Contract {
     sequencerBridge(overrides?: CallOverrides): Promise<string>
 
     'sequencerBridge()'(overrides?: CallOverrides): Promise<string>
-
-    sequencerInboxMaxDelayBlocks(overrides?: CallOverrides): Promise<BigNumber>
-
-    'sequencerInboxMaxDelayBlocks()'(
-      overrides?: CallOverrides
-    ): Promise<BigNumber>
-
-    sequencerInboxMaxDelaySeconds(overrides?: CallOverrides): Promise<BigNumber>
-
-    'sequencerInboxMaxDelaySeconds()'(
-      overrides?: CallOverrides
-    ): Promise<BigNumber>
 
     stakeOnExistingNode(
       nodeNum: BigNumberish,
@@ -1817,13 +1801,6 @@ export class AbsRollupUserFacet extends Contract {
 
     NodeRejected(nodeNum: BigNumberish | null): EventFilter
 
-    NodesDestroyed(
-      startNode: BigNumberish | null,
-      endNode: BigNumberish | null
-    ): EventFilter
-
-    OwnerFunctionCalled(id: BigNumberish | null): EventFilter
-
     Paused(account: null): EventFilter
 
     RollupChallengeStarted(
@@ -1835,12 +1812,30 @@ export class AbsRollupUserFacet extends Contract {
 
     RollupCreated(machineHash: null): EventFilter
 
-    StakerReassigned(staker: string | null, newNode: null): EventFilter
-
     Unpaused(account: null): EventFilter
+
+    UserStakeUpdated(
+      user: string | null,
+      initialBalance: null,
+      finalBalance: null
+    ): EventFilter
+
+    UserWithdrawableFundsUpdated(
+      user: string | null,
+      initialBalance: null,
+      finalBalance: null
+    ): EventFilter
   }
 
   estimateGas: {
+    STORAGE_GAP_1(overrides?: CallOverrides): Promise<BigNumber>
+
+    'STORAGE_GAP_1()'(overrides?: CallOverrides): Promise<BigNumber>
+
+    STORAGE_GAP_2(overrides?: CallOverrides): Promise<BigNumber>
+
+    'STORAGE_GAP_2()'(overrides?: CallOverrides): Promise<BigNumber>
+
     _stakerMap(arg0: string, overrides?: CallOverrides): Promise<BigNumber>
 
     '_stakerMap(address)'(
@@ -2121,14 +2116,14 @@ export class AbsRollupUserFacet extends Contract {
     requiredStake(
       blockNumber: BigNumberish,
       firstUnresolvedNodeNum: BigNumberish,
-      latestNodeCreated: BigNumberish,
+      latestCreatedNode: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>
 
     'requiredStake(uint256,uint256,uint256)'(
       blockNumber: BigNumberish,
       firstUnresolvedNodeNum: BigNumberish,
-      latestNodeCreated: BigNumberish,
+      latestCreatedNode: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>
 
@@ -2149,18 +2144,6 @@ export class AbsRollupUserFacet extends Contract {
     sequencerBridge(overrides?: CallOverrides): Promise<BigNumber>
 
     'sequencerBridge()'(overrides?: CallOverrides): Promise<BigNumber>
-
-    sequencerInboxMaxDelayBlocks(overrides?: CallOverrides): Promise<BigNumber>
-
-    'sequencerInboxMaxDelayBlocks()'(
-      overrides?: CallOverrides
-    ): Promise<BigNumber>
-
-    sequencerInboxMaxDelaySeconds(overrides?: CallOverrides): Promise<BigNumber>
-
-    'sequencerInboxMaxDelaySeconds()'(
-      overrides?: CallOverrides
-    ): Promise<BigNumber>
 
     stakeOnExistingNode(
       nodeNum: BigNumberish,
@@ -2260,6 +2243,14 @@ export class AbsRollupUserFacet extends Contract {
   }
 
   populateTransaction: {
+    STORAGE_GAP_1(overrides?: CallOverrides): Promise<PopulatedTransaction>
+
+    'STORAGE_GAP_1()'(overrides?: CallOverrides): Promise<PopulatedTransaction>
+
+    STORAGE_GAP_2(overrides?: CallOverrides): Promise<PopulatedTransaction>
+
+    'STORAGE_GAP_2()'(overrides?: CallOverrides): Promise<PopulatedTransaction>
+
     _stakerMap(
       arg0: string,
       overrides?: CallOverrides
@@ -2589,14 +2580,14 @@ export class AbsRollupUserFacet extends Contract {
     requiredStake(
       blockNumber: BigNumberish,
       firstUnresolvedNodeNum: BigNumberish,
-      latestNodeCreated: BigNumberish,
+      latestCreatedNode: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>
 
     'requiredStake(uint256,uint256,uint256)'(
       blockNumber: BigNumberish,
       firstUnresolvedNodeNum: BigNumberish,
-      latestNodeCreated: BigNumberish,
+      latestCreatedNode: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>
 
@@ -2619,22 +2610,6 @@ export class AbsRollupUserFacet extends Contract {
     sequencerBridge(overrides?: CallOverrides): Promise<PopulatedTransaction>
 
     'sequencerBridge()'(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>
-
-    sequencerInboxMaxDelayBlocks(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>
-
-    'sequencerInboxMaxDelayBlocks()'(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>
-
-    sequencerInboxMaxDelaySeconds(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>
-
-    'sequencerInboxMaxDelaySeconds()'(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>
 

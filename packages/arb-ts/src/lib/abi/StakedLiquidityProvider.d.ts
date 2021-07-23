@@ -22,7 +22,7 @@ import { FunctionFragment, EventFragment, Result } from '@ethersproject/abi'
 
 interface StakedLiquidityProviderInterface extends ethers.utils.Interface {
   functions: {
-    'fee_div()': FunctionFragment
+    'FEE_DIV()': FunctionFragment
     'owner()': FunctionFragment
     'renounceOwnership()': FunctionFragment
     'requestLiquidity(address,address,uint256,uint256,bytes)': FunctionFragment
@@ -30,7 +30,7 @@ interface StakedLiquidityProviderInterface extends ethers.utils.Interface {
     'withdrawLiquidity(address,address,uint256)': FunctionFragment
   }
 
-  encodeFunctionData(functionFragment: 'fee_div', values?: undefined): string
+  encodeFunctionData(functionFragment: 'FEE_DIV', values?: undefined): string
   encodeFunctionData(functionFragment: 'owner', values?: undefined): string
   encodeFunctionData(
     functionFragment: 'renounceOwnership',
@@ -49,7 +49,7 @@ interface StakedLiquidityProviderInterface extends ethers.utils.Interface {
     values: [string, string, BigNumberish]
   ): string
 
-  decodeFunctionResult(functionFragment: 'fee_div', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'FEE_DIV', data: BytesLike): Result
   decodeFunctionResult(functionFragment: 'owner', data: BytesLike): Result
   decodeFunctionResult(
     functionFragment: 'renounceOwnership',
@@ -89,9 +89,9 @@ export class StakedLiquidityProvider extends Contract {
   interface: StakedLiquidityProviderInterface
 
   functions: {
-    fee_div(overrides?: CallOverrides): Promise<[BigNumber]>
+    FEE_DIV(overrides?: CallOverrides): Promise<[BigNumber]>
 
-    'fee_div()'(overrides?: CallOverrides): Promise<[BigNumber]>
+    'FEE_DIV()'(overrides?: CallOverrides): Promise<[BigNumber]>
 
     owner(overrides?: CallOverrides): Promise<[string]>
 
@@ -144,9 +144,9 @@ export class StakedLiquidityProvider extends Contract {
     ): Promise<ContractTransaction>
   }
 
-  fee_div(overrides?: CallOverrides): Promise<BigNumber>
+  FEE_DIV(overrides?: CallOverrides): Promise<BigNumber>
 
-  'fee_div()'(overrides?: CallOverrides): Promise<BigNumber>
+  'FEE_DIV()'(overrides?: CallOverrides): Promise<BigNumber>
 
   owner(overrides?: CallOverrides): Promise<string>
 
@@ -199,9 +199,9 @@ export class StakedLiquidityProvider extends Contract {
   ): Promise<ContractTransaction>
 
   callStatic: {
-    fee_div(overrides?: CallOverrides): Promise<BigNumber>
+    FEE_DIV(overrides?: CallOverrides): Promise<BigNumber>
 
-    'fee_div()'(overrides?: CallOverrides): Promise<BigNumber>
+    'FEE_DIV()'(overrides?: CallOverrides): Promise<BigNumber>
 
     owner(overrides?: CallOverrides): Promise<string>
 
@@ -262,9 +262,9 @@ export class StakedLiquidityProvider extends Contract {
   }
 
   estimateGas: {
-    fee_div(overrides?: CallOverrides): Promise<BigNumber>
+    FEE_DIV(overrides?: CallOverrides): Promise<BigNumber>
 
-    'fee_div()'(overrides?: CallOverrides): Promise<BigNumber>
+    'FEE_DIV()'(overrides?: CallOverrides): Promise<BigNumber>
 
     owner(overrides?: CallOverrides): Promise<BigNumber>
 
@@ -318,9 +318,9 @@ export class StakedLiquidityProvider extends Contract {
   }
 
   populateTransaction: {
-    fee_div(overrides?: CallOverrides): Promise<PopulatedTransaction>
+    FEE_DIV(overrides?: CallOverrides): Promise<PopulatedTransaction>
 
-    'fee_div()'(overrides?: CallOverrides): Promise<PopulatedTransaction>
+    'FEE_DIV()'(overrides?: CallOverrides): Promise<PopulatedTransaction>
 
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>
 

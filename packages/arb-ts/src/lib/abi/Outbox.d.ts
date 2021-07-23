@@ -22,7 +22,7 @@ import { FunctionFragment, EventFragment, Result } from '@ethersproject/abi'
 
 interface OutboxInterface extends ethers.utils.Interface {
   functions: {
-    'beacon()': FunctionFragment
+    'OUTBOX_VERSION()': FunctionFragment
     'bridge()': FunctionFragment
     'calculateItemHash(address,address,uint256,uint256,uint256,uint256,bytes)': FunctionFragment
     'calculateMerkleRoot(bytes32[],uint256,bytes32)': FunctionFragment
@@ -33,13 +33,16 @@ interface OutboxInterface extends ethers.utils.Interface {
     'l2ToL1EthBlock()': FunctionFragment
     'l2ToL1Sender()': FunctionFragment
     'l2ToL1Timestamp()': FunctionFragment
-    'outboxes(uint256)': FunctionFragment
-    'outboxesLength()': FunctionFragment
+    'outboxEntries(uint256)': FunctionFragment
+    'outboxEntryExists(uint256)': FunctionFragment
     'processOutgoingMessages(bytes,uint256[])': FunctionFragment
     'rollup()': FunctionFragment
   }
 
-  encodeFunctionData(functionFragment: 'beacon', values?: undefined): string
+  encodeFunctionData(
+    functionFragment: 'OUTBOX_VERSION',
+    values?: undefined
+  ): string
   encodeFunctionData(functionFragment: 'bridge', values?: undefined): string
   encodeFunctionData(
     functionFragment: 'calculateItemHash',
@@ -94,12 +97,12 @@ interface OutboxInterface extends ethers.utils.Interface {
     values?: undefined
   ): string
   encodeFunctionData(
-    functionFragment: 'outboxes',
+    functionFragment: 'outboxEntries',
     values: [BigNumberish]
   ): string
   encodeFunctionData(
-    functionFragment: 'outboxesLength',
-    values?: undefined
+    functionFragment: 'outboxEntryExists',
+    values: [BigNumberish]
   ): string
   encodeFunctionData(
     functionFragment: 'processOutgoingMessages',
@@ -107,7 +110,10 @@ interface OutboxInterface extends ethers.utils.Interface {
   ): string
   encodeFunctionData(functionFragment: 'rollup', values?: undefined): string
 
-  decodeFunctionResult(functionFragment: 'beacon', data: BytesLike): Result
+  decodeFunctionResult(
+    functionFragment: 'OUTBOX_VERSION',
+    data: BytesLike
+  ): Result
   decodeFunctionResult(functionFragment: 'bridge', data: BytesLike): Result
   decodeFunctionResult(
     functionFragment: 'calculateItemHash',
@@ -136,9 +142,12 @@ interface OutboxInterface extends ethers.utils.Interface {
     functionFragment: 'l2ToL1Timestamp',
     data: BytesLike
   ): Result
-  decodeFunctionResult(functionFragment: 'outboxes', data: BytesLike): Result
   decodeFunctionResult(
-    functionFragment: 'outboxesLength',
+    functionFragment: 'outboxEntries',
+    data: BytesLike
+  ): Result
+  decodeFunctionResult(
+    functionFragment: 'outboxEntryExists',
     data: BytesLike
   ): Result
   decodeFunctionResult(
@@ -170,9 +179,9 @@ export class Outbox extends Contract {
   interface: OutboxInterface
 
   functions: {
-    beacon(overrides?: CallOverrides): Promise<[string]>
+    OUTBOX_VERSION(overrides?: CallOverrides): Promise<[BigNumber]>
 
-    'beacon()'(overrides?: CallOverrides): Promise<[string]>
+    'OUTBOX_VERSION()'(overrides?: CallOverrides): Promise<[BigNumber]>
 
     bridge(overrides?: CallOverrides): Promise<[string]>
 
@@ -215,7 +224,7 @@ export class Outbox extends Contract {
     ): Promise<[string]>
 
     executeTransaction(
-      outboxIndex: BigNumberish,
+      batchNum: BigNumberish,
       proof: BytesLike[],
       index: BigNumberish,
       l2Sender: string,
@@ -229,7 +238,7 @@ export class Outbox extends Contract {
     ): Promise<ContractTransaction>
 
     'executeTransaction(uint256,bytes32[],uint256,address,address,uint256,uint256,uint256,uint256,bytes)'(
-      outboxIndex: BigNumberish,
+      batchNum: BigNumberish,
       proof: BytesLike[],
       index: BigNumberish,
       l2Sender: string,
@@ -274,16 +283,25 @@ export class Outbox extends Contract {
 
     'l2ToL1Timestamp()'(overrides?: CallOverrides): Promise<[BigNumber]>
 
-    outboxes(arg0: BigNumberish, overrides?: CallOverrides): Promise<[string]>
-
-    'outboxes(uint256)'(
+    outboxEntries(
       arg0: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<[string]>
+    ): Promise<[string] & { root: string }>
 
-    outboxesLength(overrides?: CallOverrides): Promise<[BigNumber]>
+    'outboxEntries(uint256)'(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[string] & { root: string }>
 
-    'outboxesLength()'(overrides?: CallOverrides): Promise<[BigNumber]>
+    outboxEntryExists(
+      batchNum: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>
+
+    'outboxEntryExists(uint256)'(
+      batchNum: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>
 
     processOutgoingMessages(
       sendsData: BytesLike,
@@ -302,9 +320,9 @@ export class Outbox extends Contract {
     'rollup()'(overrides?: CallOverrides): Promise<[string]>
   }
 
-  beacon(overrides?: CallOverrides): Promise<string>
+  OUTBOX_VERSION(overrides?: CallOverrides): Promise<BigNumber>
 
-  'beacon()'(overrides?: CallOverrides): Promise<string>
+  'OUTBOX_VERSION()'(overrides?: CallOverrides): Promise<BigNumber>
 
   bridge(overrides?: CallOverrides): Promise<string>
 
@@ -347,7 +365,7 @@ export class Outbox extends Contract {
   ): Promise<string>
 
   executeTransaction(
-    outboxIndex: BigNumberish,
+    batchNum: BigNumberish,
     proof: BytesLike[],
     index: BigNumberish,
     l2Sender: string,
@@ -361,7 +379,7 @@ export class Outbox extends Contract {
   ): Promise<ContractTransaction>
 
   'executeTransaction(uint256,bytes32[],uint256,address,address,uint256,uint256,uint256,uint256,bytes)'(
-    outboxIndex: BigNumberish,
+    batchNum: BigNumberish,
     proof: BytesLike[],
     index: BigNumberish,
     l2Sender: string,
@@ -406,16 +424,22 @@ export class Outbox extends Contract {
 
   'l2ToL1Timestamp()'(overrides?: CallOverrides): Promise<BigNumber>
 
-  outboxes(arg0: BigNumberish, overrides?: CallOverrides): Promise<string>
+  outboxEntries(arg0: BigNumberish, overrides?: CallOverrides): Promise<string>
 
-  'outboxes(uint256)'(
+  'outboxEntries(uint256)'(
     arg0: BigNumberish,
     overrides?: CallOverrides
   ): Promise<string>
 
-  outboxesLength(overrides?: CallOverrides): Promise<BigNumber>
+  outboxEntryExists(
+    batchNum: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<boolean>
 
-  'outboxesLength()'(overrides?: CallOverrides): Promise<BigNumber>
+  'outboxEntryExists(uint256)'(
+    batchNum: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<boolean>
 
   processOutgoingMessages(
     sendsData: BytesLike,
@@ -434,9 +458,9 @@ export class Outbox extends Contract {
   'rollup()'(overrides?: CallOverrides): Promise<string>
 
   callStatic: {
-    beacon(overrides?: CallOverrides): Promise<string>
+    OUTBOX_VERSION(overrides?: CallOverrides): Promise<BigNumber>
 
-    'beacon()'(overrides?: CallOverrides): Promise<string>
+    'OUTBOX_VERSION()'(overrides?: CallOverrides): Promise<BigNumber>
 
     bridge(overrides?: CallOverrides): Promise<string>
 
@@ -479,7 +503,7 @@ export class Outbox extends Contract {
     ): Promise<string>
 
     executeTransaction(
-      outboxIndex: BigNumberish,
+      batchNum: BigNumberish,
       proof: BytesLike[],
       index: BigNumberish,
       l2Sender: string,
@@ -493,7 +517,7 @@ export class Outbox extends Contract {
     ): Promise<void>
 
     'executeTransaction(uint256,bytes32[],uint256,address,address,uint256,uint256,uint256,uint256,bytes)'(
-      outboxIndex: BigNumberish,
+      batchNum: BigNumberish,
       proof: BytesLike[],
       index: BigNumberish,
       l2Sender: string,
@@ -538,16 +562,25 @@ export class Outbox extends Contract {
 
     'l2ToL1Timestamp()'(overrides?: CallOverrides): Promise<BigNumber>
 
-    outboxes(arg0: BigNumberish, overrides?: CallOverrides): Promise<string>
-
-    'outboxes(uint256)'(
+    outboxEntries(
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<string>
 
-    outboxesLength(overrides?: CallOverrides): Promise<BigNumber>
+    'outboxEntries(uint256)'(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<string>
 
-    'outboxesLength()'(overrides?: CallOverrides): Promise<BigNumber>
+    outboxEntryExists(
+      batchNum: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<boolean>
+
+    'outboxEntryExists(uint256)'(
+      batchNum: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<boolean>
 
     processOutgoingMessages(
       sendsData: BytesLike,
@@ -570,22 +603,22 @@ export class Outbox extends Contract {
     OutBoxTransactionExecuted(
       destAddr: string | null,
       l2Sender: string | null,
-      outboxIndex: BigNumberish | null,
+      outboxEntryIndex: BigNumberish | null,
       transactionIndex: null
     ): EventFilter
 
     OutboxEntryCreated(
       batchNum: BigNumberish | null,
-      outboxIndex: null,
+      outboxEntryIndex: null,
       outputRoot: null,
       numInBatch: null
     ): EventFilter
   }
 
   estimateGas: {
-    beacon(overrides?: CallOverrides): Promise<BigNumber>
+    OUTBOX_VERSION(overrides?: CallOverrides): Promise<BigNumber>
 
-    'beacon()'(overrides?: CallOverrides): Promise<BigNumber>
+    'OUTBOX_VERSION()'(overrides?: CallOverrides): Promise<BigNumber>
 
     bridge(overrides?: CallOverrides): Promise<BigNumber>
 
@@ -628,7 +661,7 @@ export class Outbox extends Contract {
     ): Promise<BigNumber>
 
     executeTransaction(
-      outboxIndex: BigNumberish,
+      batchNum: BigNumberish,
       proof: BytesLike[],
       index: BigNumberish,
       l2Sender: string,
@@ -642,7 +675,7 @@ export class Outbox extends Contract {
     ): Promise<BigNumber>
 
     'executeTransaction(uint256,bytes32[],uint256,address,address,uint256,uint256,uint256,uint256,bytes)'(
-      outboxIndex: BigNumberish,
+      batchNum: BigNumberish,
       proof: BytesLike[],
       index: BigNumberish,
       l2Sender: string,
@@ -687,16 +720,25 @@ export class Outbox extends Contract {
 
     'l2ToL1Timestamp()'(overrides?: CallOverrides): Promise<BigNumber>
 
-    outboxes(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>
-
-    'outboxes(uint256)'(
+    outboxEntries(
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>
 
-    outboxesLength(overrides?: CallOverrides): Promise<BigNumber>
+    'outboxEntries(uint256)'(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>
 
-    'outboxesLength()'(overrides?: CallOverrides): Promise<BigNumber>
+    outboxEntryExists(
+      batchNum: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>
+
+    'outboxEntryExists(uint256)'(
+      batchNum: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>
 
     processOutgoingMessages(
       sendsData: BytesLike,
@@ -716,9 +758,9 @@ export class Outbox extends Contract {
   }
 
   populateTransaction: {
-    beacon(overrides?: CallOverrides): Promise<PopulatedTransaction>
+    OUTBOX_VERSION(overrides?: CallOverrides): Promise<PopulatedTransaction>
 
-    'beacon()'(overrides?: CallOverrides): Promise<PopulatedTransaction>
+    'OUTBOX_VERSION()'(overrides?: CallOverrides): Promise<PopulatedTransaction>
 
     bridge(overrides?: CallOverrides): Promise<PopulatedTransaction>
 
@@ -761,7 +803,7 @@ export class Outbox extends Contract {
     ): Promise<PopulatedTransaction>
 
     executeTransaction(
-      outboxIndex: BigNumberish,
+      batchNum: BigNumberish,
       proof: BytesLike[],
       index: BigNumberish,
       l2Sender: string,
@@ -775,7 +817,7 @@ export class Outbox extends Contract {
     ): Promise<PopulatedTransaction>
 
     'executeTransaction(uint256,bytes32[],uint256,address,address,uint256,uint256,uint256,uint256,bytes)'(
-      outboxIndex: BigNumberish,
+      batchNum: BigNumberish,
       proof: BytesLike[],
       index: BigNumberish,
       l2Sender: string,
@@ -822,19 +864,25 @@ export class Outbox extends Contract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>
 
-    outboxes(
+    outboxEntries(
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>
 
-    'outboxes(uint256)'(
+    'outboxEntries(uint256)'(
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>
 
-    outboxesLength(overrides?: CallOverrides): Promise<PopulatedTransaction>
+    outboxEntryExists(
+      batchNum: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>
 
-    'outboxesLength()'(overrides?: CallOverrides): Promise<PopulatedTransaction>
+    'outboxEntryExists(uint256)'(
+      batchNum: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>
 
     processOutgoingMessages(
       sendsData: BytesLike,

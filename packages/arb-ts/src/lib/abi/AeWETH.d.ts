@@ -292,20 +292,20 @@ export class AeWETH extends Contract {
     ): Promise<ContractTransaction>
 
     initialize(
-      _name: string,
-      _symbol: string,
-      _decimals: BigNumberish,
-      _l2Gateway: string,
-      _l1Address: string,
+      name_: string,
+      symbol_: string,
+      decimals_: BigNumberish,
+      l2Gateway_: string,
+      l1Address_: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>
 
     'initialize(string,string,uint8,address,address)'(
-      _name: string,
-      _symbol: string,
-      _decimals: BigNumberish,
-      _l2Gateway: string,
-      _l1Address: string,
+      name_: string,
+      symbol_: string,
+      decimals_: BigNumberish,
+      l2Gateway_: string,
+      l1Address_: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>
 
@@ -523,20 +523,20 @@ export class AeWETH extends Contract {
   ): Promise<ContractTransaction>
 
   initialize(
-    _name: string,
-    _symbol: string,
-    _decimals: BigNumberish,
-    _l2Gateway: string,
-    _l1Address: string,
+    name_: string,
+    symbol_: string,
+    decimals_: BigNumberish,
+    l2Gateway_: string,
+    l1Address_: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>
 
   'initialize(string,string,uint8,address,address)'(
-    _name: string,
-    _symbol: string,
-    _decimals: BigNumberish,
-    _l2Gateway: string,
-    _l1Address: string,
+    name_: string,
+    symbol_: string,
+    decimals_: BigNumberish,
+    l2Gateway_: string,
+    l1Address_: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>
 
@@ -751,20 +751,20 @@ export class AeWETH extends Contract {
     ): Promise<boolean>
 
     initialize(
-      _name: string,
-      _symbol: string,
-      _decimals: BigNumberish,
-      _l2Gateway: string,
-      _l1Address: string,
+      name_: string,
+      symbol_: string,
+      decimals_: BigNumberish,
+      l2Gateway_: string,
+      l1Address_: string,
       overrides?: CallOverrides
     ): Promise<void>
 
     'initialize(string,string,uint8,address,address)'(
-      _name: string,
-      _symbol: string,
-      _decimals: BigNumberish,
-      _l2Gateway: string,
-      _l1Address: string,
+      name_: string,
+      symbol_: string,
+      decimals_: BigNumberish,
+      l2Gateway_: string,
+      l1Address_: string,
       overrides?: CallOverrides
     ): Promise<void>
 
@@ -992,20 +992,20 @@ export class AeWETH extends Contract {
     ): Promise<BigNumber>
 
     initialize(
-      _name: string,
-      _symbol: string,
-      _decimals: BigNumberish,
-      _l2Gateway: string,
-      _l1Address: string,
+      name_: string,
+      symbol_: string,
+      decimals_: BigNumberish,
+      l2Gateway_: string,
+      l1Address_: string,
       overrides?: Overrides
     ): Promise<BigNumber>
 
     'initialize(string,string,uint8,address,address)'(
-      _name: string,
-      _symbol: string,
-      _decimals: BigNumberish,
-      _l2Gateway: string,
-      _l1Address: string,
+      name_: string,
+      symbol_: string,
+      decimals_: BigNumberish,
+      l2Gateway_: string,
+      l1Address_: string,
       overrides?: Overrides
     ): Promise<BigNumber>
 
@@ -1226,20 +1226,20 @@ export class AeWETH extends Contract {
     ): Promise<PopulatedTransaction>
 
     initialize(
-      _name: string,
-      _symbol: string,
-      _decimals: BigNumberish,
-      _l2Gateway: string,
-      _l1Address: string,
+      name_: string,
+      symbol_: string,
+      decimals_: BigNumberish,
+      l2Gateway_: string,
+      l1Address_: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>
 
     'initialize(string,string,uint8,address,address)'(
-      _name: string,
-      _symbol: string,
-      _decimals: BigNumberish,
-      _l2Gateway: string,
-      _l1Address: string,
+      name_: string,
+      symbol_: string,
+      decimals_: BigNumberish,
+      l2Gateway_: string,
+      l1Address_: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>
 

@@ -22,7 +22,6 @@ import { FunctionFragment, EventFragment, Result } from '@ethersproject/abi'
 
 interface RollupEventBridgeInterface extends ethers.utils.Interface {
   functions: {
-    'claimNode(uint256,address)': FunctionFragment
     'initialize(address,address)': FunctionFragment
     'isMaster()': FunctionFragment
     'nodeConfirmed(uint256)': FunctionFragment
@@ -32,10 +31,6 @@ interface RollupEventBridgeInterface extends ethers.utils.Interface {
     'stakeCreated(address,uint256)': FunctionFragment
   }
 
-  encodeFunctionData(
-    functionFragment: 'claimNode',
-    values: [BigNumberish, string]
-  ): string
   encodeFunctionData(
     functionFragment: 'initialize',
     values: [string, string]
@@ -69,7 +64,6 @@ interface RollupEventBridgeInterface extends ethers.utils.Interface {
     values: [string, BigNumberish]
   ): string
 
-  decodeFunctionResult(functionFragment: 'claimNode', data: BytesLike): Result
   decodeFunctionResult(functionFragment: 'initialize', data: BytesLike): Result
   decodeFunctionResult(functionFragment: 'isMaster', data: BytesLike): Result
   decodeFunctionResult(
@@ -115,18 +109,6 @@ export class RollupEventBridge extends Contract {
   interface: RollupEventBridgeInterface
 
   functions: {
-    claimNode(
-      nodeNum: BigNumberish,
-      staker: string,
-      overrides?: Overrides
-    ): Promise<ContractTransaction>
-
-    'claimNode(uint256,address)'(
-      nodeNum: BigNumberish,
-      staker: string,
-      overrides?: Overrides
-    ): Promise<ContractTransaction>
-
     initialize(
       _bridge: string,
       _rollup: string,
@@ -211,18 +193,6 @@ export class RollupEventBridge extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>
   }
-
-  claimNode(
-    nodeNum: BigNumberish,
-    staker: string,
-    overrides?: Overrides
-  ): Promise<ContractTransaction>
-
-  'claimNode(uint256,address)'(
-    nodeNum: BigNumberish,
-    staker: string,
-    overrides?: Overrides
-  ): Promise<ContractTransaction>
 
   initialize(
     _bridge: string,
@@ -309,18 +279,6 @@ export class RollupEventBridge extends Contract {
   ): Promise<ContractTransaction>
 
   callStatic: {
-    claimNode(
-      nodeNum: BigNumberish,
-      staker: string,
-      overrides?: CallOverrides
-    ): Promise<void>
-
-    'claimNode(uint256,address)'(
-      nodeNum: BigNumberish,
-      staker: string,
-      overrides?: CallOverrides
-    ): Promise<void>
-
     initialize(
       _bridge: string,
       _rollup: string,
@@ -418,18 +376,6 @@ export class RollupEventBridge extends Contract {
   }
 
   estimateGas: {
-    claimNode(
-      nodeNum: BigNumberish,
-      staker: string,
-      overrides?: Overrides
-    ): Promise<BigNumber>
-
-    'claimNode(uint256,address)'(
-      nodeNum: BigNumberish,
-      staker: string,
-      overrides?: Overrides
-    ): Promise<BigNumber>
-
     initialize(
       _bridge: string,
       _rollup: string,
@@ -516,18 +462,6 @@ export class RollupEventBridge extends Contract {
   }
 
   populateTransaction: {
-    claimNode(
-      nodeNum: BigNumberish,
-      staker: string,
-      overrides?: Overrides
-    ): Promise<PopulatedTransaction>
-
-    'claimNode(uint256,address)'(
-      nodeNum: BigNumberish,
-      staker: string,
-      overrides?: Overrides
-    ): Promise<PopulatedTransaction>
-
     initialize(
       _bridge: string,
       _rollup: string,

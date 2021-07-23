@@ -22,6 +22,10 @@ import { FunctionFragment, EventFragment, Result } from '@ethersproject/abi'
 
 interface IRollupAdminInterface extends ethers.utils.Interface {
   functions: {
+    'forceConfirmNode(uint256,bytes32,bytes,uint256[],uint256,bytes32,uint256)': FunctionFragment
+    'forceCreateNode(bytes32,bytes32[3][2],uint256[4][2],bytes,uint256,uint256,uint256)': FunctionFragment
+    'forceRefundStaker(address[])': FunctionFragment
+    'forceResolveChallenge(address[],address[])': FunctionFragment
     'pause()': FunctionFragment
     'removeOldOutbox(address)': FunctionFragment
     'resume()': FunctionFragment
@@ -45,6 +49,41 @@ interface IRollupAdminInterface extends ethers.utils.Interface {
     'upgradeBeacon(address,address)': FunctionFragment
   }
 
+  encodeFunctionData(
+    functionFragment: 'forceConfirmNode',
+    values: [
+      BigNumberish,
+      BytesLike,
+      BytesLike,
+      BigNumberish[],
+      BigNumberish,
+      BytesLike,
+      BigNumberish
+    ]
+  ): string
+  encodeFunctionData(
+    functionFragment: 'forceCreateNode',
+    values: [
+      BytesLike,
+      [[BytesLike, BytesLike, BytesLike], [BytesLike, BytesLike, BytesLike]],
+      [
+        [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
+        [BigNumberish, BigNumberish, BigNumberish, BigNumberish]
+      ],
+      BytesLike,
+      BigNumberish,
+      BigNumberish,
+      BigNumberish
+    ]
+  ): string
+  encodeFunctionData(
+    functionFragment: 'forceRefundStaker',
+    values: [string[]]
+  ): string
+  encodeFunctionData(
+    functionFragment: 'forceResolveChallenge',
+    values: [string[], string[]]
+  ): string
   encodeFunctionData(functionFragment: 'pause', values?: undefined): string
   encodeFunctionData(
     functionFragment: 'removeOldOutbox',
@@ -115,6 +154,22 @@ interface IRollupAdminInterface extends ethers.utils.Interface {
     values: [string, string]
   ): string
 
+  decodeFunctionResult(
+    functionFragment: 'forceConfirmNode',
+    data: BytesLike
+  ): Result
+  decodeFunctionResult(
+    functionFragment: 'forceCreateNode',
+    data: BytesLike
+  ): Result
+  decodeFunctionResult(
+    functionFragment: 'forceRefundStaker',
+    data: BytesLike
+  ): Result
+  decodeFunctionResult(
+    functionFragment: 'forceResolveChallenge',
+    data: BytesLike
+  ): Result
   decodeFunctionResult(functionFragment: 'pause', data: BytesLike): Result
   decodeFunctionResult(
     functionFragment: 'removeOldOutbox',
@@ -182,7 +237,11 @@ interface IRollupAdminInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result
 
-  events: {}
+  events: {
+    'OwnerFunctionCalled(uint256)': EventFragment
+  }
+
+  getEvent(nameOrSignatureOrTopic: 'OwnerFunctionCalled'): EventFragment
 }
 
 export class IRollupAdmin extends Contract {
@@ -199,6 +258,84 @@ export class IRollupAdmin extends Contract {
   interface: IRollupAdminInterface
 
   functions: {
+    forceConfirmNode(
+      nodeNum: BigNumberish,
+      beforeSendAcc: BytesLike,
+      sendsData: BytesLike,
+      sendLengths: BigNumberish[],
+      afterSendCount: BigNumberish,
+      afterLogAcc: BytesLike,
+      afterLogCount: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>
+
+    'forceConfirmNode(uint256,bytes32,bytes,uint256[],uint256,bytes32,uint256)'(
+      nodeNum: BigNumberish,
+      beforeSendAcc: BytesLike,
+      sendsData: BytesLike,
+      sendLengths: BigNumberish[],
+      afterSendCount: BigNumberish,
+      afterLogAcc: BytesLike,
+      afterLogCount: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>
+
+    forceCreateNode(
+      expectedNodeHash: BytesLike,
+      assertionBytes32Fields: [
+        [BytesLike, BytesLike, BytesLike],
+        [BytesLike, BytesLike, BytesLike]
+      ],
+      assertionIntFields: [
+        [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
+        [BigNumberish, BigNumberish, BigNumberish, BigNumberish]
+      ],
+      sequencerBatchProof: BytesLike,
+      beforeProposedBlock: BigNumberish,
+      beforeInboxMaxCount: BigNumberish,
+      prevNode: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>
+
+    'forceCreateNode(bytes32,bytes32[3][2],uint256[4][2],bytes,uint256,uint256,uint256)'(
+      expectedNodeHash: BytesLike,
+      assertionBytes32Fields: [
+        [BytesLike, BytesLike, BytesLike],
+        [BytesLike, BytesLike, BytesLike]
+      ],
+      assertionIntFields: [
+        [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
+        [BigNumberish, BigNumberish, BigNumberish, BigNumberish]
+      ],
+      sequencerBatchProof: BytesLike,
+      beforeProposedBlock: BigNumberish,
+      beforeInboxMaxCount: BigNumberish,
+      prevNode: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>
+
+    forceRefundStaker(
+      stacker: string[],
+      overrides?: Overrides
+    ): Promise<ContractTransaction>
+
+    'forceRefundStaker(address[])'(
+      stacker: string[],
+      overrides?: Overrides
+    ): Promise<ContractTransaction>
+
+    forceResolveChallenge(
+      stackerA: string[],
+      stackerB: string[],
+      overrides?: Overrides
+    ): Promise<ContractTransaction>
+
+    'forceResolveChallenge(address[],address[])'(
+      stackerA: string[],
+      stackerB: string[],
+      overrides?: Overrides
+    ): Promise<ContractTransaction>
+
     pause(overrides?: Overrides): Promise<ContractTransaction>
 
     'pause()'(overrides?: Overrides): Promise<ContractTransaction>
@@ -413,6 +550,84 @@ export class IRollupAdmin extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>
   }
+
+  forceConfirmNode(
+    nodeNum: BigNumberish,
+    beforeSendAcc: BytesLike,
+    sendsData: BytesLike,
+    sendLengths: BigNumberish[],
+    afterSendCount: BigNumberish,
+    afterLogAcc: BytesLike,
+    afterLogCount: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>
+
+  'forceConfirmNode(uint256,bytes32,bytes,uint256[],uint256,bytes32,uint256)'(
+    nodeNum: BigNumberish,
+    beforeSendAcc: BytesLike,
+    sendsData: BytesLike,
+    sendLengths: BigNumberish[],
+    afterSendCount: BigNumberish,
+    afterLogAcc: BytesLike,
+    afterLogCount: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>
+
+  forceCreateNode(
+    expectedNodeHash: BytesLike,
+    assertionBytes32Fields: [
+      [BytesLike, BytesLike, BytesLike],
+      [BytesLike, BytesLike, BytesLike]
+    ],
+    assertionIntFields: [
+      [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
+      [BigNumberish, BigNumberish, BigNumberish, BigNumberish]
+    ],
+    sequencerBatchProof: BytesLike,
+    beforeProposedBlock: BigNumberish,
+    beforeInboxMaxCount: BigNumberish,
+    prevNode: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>
+
+  'forceCreateNode(bytes32,bytes32[3][2],uint256[4][2],bytes,uint256,uint256,uint256)'(
+    expectedNodeHash: BytesLike,
+    assertionBytes32Fields: [
+      [BytesLike, BytesLike, BytesLike],
+      [BytesLike, BytesLike, BytesLike]
+    ],
+    assertionIntFields: [
+      [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
+      [BigNumberish, BigNumberish, BigNumberish, BigNumberish]
+    ],
+    sequencerBatchProof: BytesLike,
+    beforeProposedBlock: BigNumberish,
+    beforeInboxMaxCount: BigNumberish,
+    prevNode: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>
+
+  forceRefundStaker(
+    stacker: string[],
+    overrides?: Overrides
+  ): Promise<ContractTransaction>
+
+  'forceRefundStaker(address[])'(
+    stacker: string[],
+    overrides?: Overrides
+  ): Promise<ContractTransaction>
+
+  forceResolveChallenge(
+    stackerA: string[],
+    stackerB: string[],
+    overrides?: Overrides
+  ): Promise<ContractTransaction>
+
+  'forceResolveChallenge(address[],address[])'(
+    stackerA: string[],
+    stackerB: string[],
+    overrides?: Overrides
+  ): Promise<ContractTransaction>
 
   pause(overrides?: Overrides): Promise<ContractTransaction>
 
@@ -629,6 +844,84 @@ export class IRollupAdmin extends Contract {
   ): Promise<ContractTransaction>
 
   callStatic: {
+    forceConfirmNode(
+      nodeNum: BigNumberish,
+      beforeSendAcc: BytesLike,
+      sendsData: BytesLike,
+      sendLengths: BigNumberish[],
+      afterSendCount: BigNumberish,
+      afterLogAcc: BytesLike,
+      afterLogCount: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>
+
+    'forceConfirmNode(uint256,bytes32,bytes,uint256[],uint256,bytes32,uint256)'(
+      nodeNum: BigNumberish,
+      beforeSendAcc: BytesLike,
+      sendsData: BytesLike,
+      sendLengths: BigNumberish[],
+      afterSendCount: BigNumberish,
+      afterLogAcc: BytesLike,
+      afterLogCount: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>
+
+    forceCreateNode(
+      expectedNodeHash: BytesLike,
+      assertionBytes32Fields: [
+        [BytesLike, BytesLike, BytesLike],
+        [BytesLike, BytesLike, BytesLike]
+      ],
+      assertionIntFields: [
+        [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
+        [BigNumberish, BigNumberish, BigNumberish, BigNumberish]
+      ],
+      sequencerBatchProof: BytesLike,
+      beforeProposedBlock: BigNumberish,
+      beforeInboxMaxCount: BigNumberish,
+      prevNode: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>
+
+    'forceCreateNode(bytes32,bytes32[3][2],uint256[4][2],bytes,uint256,uint256,uint256)'(
+      expectedNodeHash: BytesLike,
+      assertionBytes32Fields: [
+        [BytesLike, BytesLike, BytesLike],
+        [BytesLike, BytesLike, BytesLike]
+      ],
+      assertionIntFields: [
+        [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
+        [BigNumberish, BigNumberish, BigNumberish, BigNumberish]
+      ],
+      sequencerBatchProof: BytesLike,
+      beforeProposedBlock: BigNumberish,
+      beforeInboxMaxCount: BigNumberish,
+      prevNode: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>
+
+    forceRefundStaker(
+      stacker: string[],
+      overrides?: CallOverrides
+    ): Promise<void>
+
+    'forceRefundStaker(address[])'(
+      stacker: string[],
+      overrides?: CallOverrides
+    ): Promise<void>
+
+    forceResolveChallenge(
+      stackerA: string[],
+      stackerB: string[],
+      overrides?: CallOverrides
+    ): Promise<void>
+
+    'forceResolveChallenge(address[],address[])'(
+      stackerA: string[],
+      stackerB: string[],
+      overrides?: CallOverrides
+    ): Promise<void>
+
     pause(overrides?: CallOverrides): Promise<void>
 
     'pause()'(overrides?: CallOverrides): Promise<void>
@@ -832,9 +1125,89 @@ export class IRollupAdmin extends Contract {
     ): Promise<void>
   }
 
-  filters: {}
+  filters: {
+    OwnerFunctionCalled(id: BigNumberish | null): EventFilter
+  }
 
   estimateGas: {
+    forceConfirmNode(
+      nodeNum: BigNumberish,
+      beforeSendAcc: BytesLike,
+      sendsData: BytesLike,
+      sendLengths: BigNumberish[],
+      afterSendCount: BigNumberish,
+      afterLogAcc: BytesLike,
+      afterLogCount: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>
+
+    'forceConfirmNode(uint256,bytes32,bytes,uint256[],uint256,bytes32,uint256)'(
+      nodeNum: BigNumberish,
+      beforeSendAcc: BytesLike,
+      sendsData: BytesLike,
+      sendLengths: BigNumberish[],
+      afterSendCount: BigNumberish,
+      afterLogAcc: BytesLike,
+      afterLogCount: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>
+
+    forceCreateNode(
+      expectedNodeHash: BytesLike,
+      assertionBytes32Fields: [
+        [BytesLike, BytesLike, BytesLike],
+        [BytesLike, BytesLike, BytesLike]
+      ],
+      assertionIntFields: [
+        [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
+        [BigNumberish, BigNumberish, BigNumberish, BigNumberish]
+      ],
+      sequencerBatchProof: BytesLike,
+      beforeProposedBlock: BigNumberish,
+      beforeInboxMaxCount: BigNumberish,
+      prevNode: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>
+
+    'forceCreateNode(bytes32,bytes32[3][2],uint256[4][2],bytes,uint256,uint256,uint256)'(
+      expectedNodeHash: BytesLike,
+      assertionBytes32Fields: [
+        [BytesLike, BytesLike, BytesLike],
+        [BytesLike, BytesLike, BytesLike]
+      ],
+      assertionIntFields: [
+        [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
+        [BigNumberish, BigNumberish, BigNumberish, BigNumberish]
+      ],
+      sequencerBatchProof: BytesLike,
+      beforeProposedBlock: BigNumberish,
+      beforeInboxMaxCount: BigNumberish,
+      prevNode: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>
+
+    forceRefundStaker(
+      stacker: string[],
+      overrides?: Overrides
+    ): Promise<BigNumber>
+
+    'forceRefundStaker(address[])'(
+      stacker: string[],
+      overrides?: Overrides
+    ): Promise<BigNumber>
+
+    forceResolveChallenge(
+      stackerA: string[],
+      stackerB: string[],
+      overrides?: Overrides
+    ): Promise<BigNumber>
+
+    'forceResolveChallenge(address[],address[])'(
+      stackerA: string[],
+      stackerB: string[],
+      overrides?: Overrides
+    ): Promise<BigNumber>
+
     pause(overrides?: Overrides): Promise<BigNumber>
 
     'pause()'(overrides?: Overrides): Promise<BigNumber>
@@ -1042,6 +1415,84 @@ export class IRollupAdmin extends Contract {
   }
 
   populateTransaction: {
+    forceConfirmNode(
+      nodeNum: BigNumberish,
+      beforeSendAcc: BytesLike,
+      sendsData: BytesLike,
+      sendLengths: BigNumberish[],
+      afterSendCount: BigNumberish,
+      afterLogAcc: BytesLike,
+      afterLogCount: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>
+
+    'forceConfirmNode(uint256,bytes32,bytes,uint256[],uint256,bytes32,uint256)'(
+      nodeNum: BigNumberish,
+      beforeSendAcc: BytesLike,
+      sendsData: BytesLike,
+      sendLengths: BigNumberish[],
+      afterSendCount: BigNumberish,
+      afterLogAcc: BytesLike,
+      afterLogCount: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>
+
+    forceCreateNode(
+      expectedNodeHash: BytesLike,
+      assertionBytes32Fields: [
+        [BytesLike, BytesLike, BytesLike],
+        [BytesLike, BytesLike, BytesLike]
+      ],
+      assertionIntFields: [
+        [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
+        [BigNumberish, BigNumberish, BigNumberish, BigNumberish]
+      ],
+      sequencerBatchProof: BytesLike,
+      beforeProposedBlock: BigNumberish,
+      beforeInboxMaxCount: BigNumberish,
+      prevNode: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>
+
+    'forceCreateNode(bytes32,bytes32[3][2],uint256[4][2],bytes,uint256,uint256,uint256)'(
+      expectedNodeHash: BytesLike,
+      assertionBytes32Fields: [
+        [BytesLike, BytesLike, BytesLike],
+        [BytesLike, BytesLike, BytesLike]
+      ],
+      assertionIntFields: [
+        [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
+        [BigNumberish, BigNumberish, BigNumberish, BigNumberish]
+      ],
+      sequencerBatchProof: BytesLike,
+      beforeProposedBlock: BigNumberish,
+      beforeInboxMaxCount: BigNumberish,
+      prevNode: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>
+
+    forceRefundStaker(
+      stacker: string[],
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>
+
+    'forceRefundStaker(address[])'(
+      stacker: string[],
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>
+
+    forceResolveChallenge(
+      stackerA: string[],
+      stackerB: string[],
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>
+
+    'forceResolveChallenge(address[],address[])'(
+      stackerA: string[],
+      stackerB: string[],
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>
+
     pause(overrides?: Overrides): Promise<PopulatedTransaction>
 
     'pause()'(overrides?: Overrides): Promise<PopulatedTransaction>

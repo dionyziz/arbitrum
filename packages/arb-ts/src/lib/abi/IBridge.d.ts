@@ -97,10 +97,16 @@ interface IBridgeInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: 'setOutbox', data: BytesLike): Result
 
   events: {
+    'BridgeCallTriggered(address,address,uint256,bytes)': EventFragment
+    'InboxToggle(address,bool)': EventFragment
     'MessageDelivered(uint256,bytes32,address,uint8,address,bytes32)': EventFragment
+    'OutboxToggle(address,bool)': EventFragment
   }
 
+  getEvent(nameOrSignatureOrTopic: 'BridgeCallTriggered'): EventFragment
+  getEvent(nameOrSignatureOrTopic: 'InboxToggle'): EventFragment
   getEvent(nameOrSignatureOrTopic: 'MessageDelivered'): EventFragment
+  getEvent(nameOrSignatureOrTopic: 'OutboxToggle'): EventFragment
 }
 
 export class IBridge extends Contract {
@@ -367,6 +373,15 @@ export class IBridge extends Contract {
   }
 
   filters: {
+    BridgeCallTriggered(
+      outbox: string | null,
+      destAddr: string | null,
+      amount: null,
+      data: null
+    ): EventFilter
+
+    InboxToggle(inbox: string | null, enabled: null): EventFilter
+
     MessageDelivered(
       messageIndex: BigNumberish | null,
       beforeInboxAcc: BytesLike | null,
@@ -375,6 +390,8 @@ export class IBridge extends Contract {
       sender: null,
       messageDataHash: null
     ): EventFilter
+
+    OutboxToggle(outbox: string | null, enabled: null): EventFilter
   }
 
   estimateGas: {

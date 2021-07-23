@@ -65,6 +65,32 @@ const _abi = [
     inputs: [
       {
         indexed: false,
+        internalType: 'uint256',
+        name: 'newValue',
+        type: 'uint256',
+      },
+    ],
+    name: 'MaxDelayBlocksUpdated',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: 'uint256',
+        name: 'newValue',
+        type: 'uint256',
+      },
+    ],
+    name: 'MaxDelaySecondsUpdated',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
         internalType: 'address',
         name: 'newAddress',
         type: 'address',
@@ -255,7 +281,7 @@ const _abi = [
         type: 'uint256',
       },
     ],
-    name: 'proveBatchContainsSequenceNumber',
+    name: 'proveInboxContainsMessage',
     outputs: [
       {
         internalType: 'uint256',
@@ -269,6 +295,32 @@ const _abi = [
       },
     ],
     stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: 'newMaxDelayBlocks',
+        type: 'uint256',
+      },
+    ],
+    name: 'setMaxDelayBlocks',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: 'newMaxDelaySeconds',
+        type: 'uint256',
+      },
+    ],
+    name: 'setMaxDelaySeconds',
+    outputs: [],
+    stateMutability: 'nonpayable',
     type: 'function',
   },
   {
