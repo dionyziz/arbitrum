@@ -10,7 +10,7 @@ require (
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/golang-lru v0.5.5-0.20210104140557-80c98217689d
-	github.com/miguelmota/go-ethereum-hdwallet v0.1.0
+	github.com/miguelmota/go-ethereum-hdwallet v0.1.1
 	github.com/offchainlabs/arbitrum/packages/arb-avm-cpp v0.8.0
 	github.com/offchainlabs/arbitrum/packages/arb-evm v0.8.0
 	github.com/offchainlabs/arbitrum/packages/arb-node-core v0.8.0
